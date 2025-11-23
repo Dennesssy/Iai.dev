@@ -4,20 +4,10 @@ import {
   ResizablePanelGroup 
 } from "@/components/ui/resizable";
 import Shell from "@/components/layout/Shell";
+import CategorySidebar from "@/components/dashboard/CategorySidebar";
 import ModelChart from "@/components/dashboard/ModelChart";
 import ModelList from "@/components/dashboard/ModelList";
 import MetricsPanel from "@/components/dashboard/MetricsPanel";
-import { 
-  Pencil, 
-  Minus, 
-  Type, 
-  SplitSquareVertical, 
-  Trash2,
-  MousePointer2,
-  Crosshair
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Home() {
@@ -26,15 +16,9 @@ export default function Home() {
   return (
     <Shell>
       <div className="flex flex-1 w-full overflow-hidden">
-        {/* Left Toolbar (Trading View style) - Hidden on Mobile */}
-        <div className="hidden md:flex w-12 flex-col items-center py-4 border-r border-border gap-4 bg-card shrink-0">
-          <ToolbarButton icon={Crosshair} label="Crosshair" active />
-          <ToolbarButton icon={Minus} label="Trend Line" />
-          <ToolbarButton icon={Type} label="Text" />
-          <ToolbarButton icon={Pencil} label="Brush" />
-          <ToolbarButton icon={SplitSquareVertical} label="Patterns" />
-          <div className="flex-1" />
-          <ToolbarButton icon={Trash2} label="Clear" />
+        {/* Left Category Sidebar (Hidden on Mobile) */}
+        <div className="hidden lg:block">
+          <CategorySidebar />
         </div>
 
         {/* Main Workspace */}
@@ -79,24 +63,5 @@ export default function Home() {
         </div>
       </div>
     </Shell>
-  );
-}
-
-function ToolbarButton({ icon: Icon, label, active }: { icon: any, label: string, active?: boolean }) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className={`h-8 w-8 ${active ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground'}`}
-        >
-          <Icon className="h-5 w-5" />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent side="right">
-        <p>{label}</p>
-      </TooltipContent>
-    </Tooltip>
   );
 }
