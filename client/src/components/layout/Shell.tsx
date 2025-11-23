@@ -13,10 +13,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useLocation } from "wouter";
 import logo from "@assets/generated_images/a_sleek,_modern,_abstract_logo_for_an_ai_analytics_platform_called_llmview.png";
 
 export default function Shell({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [location, setLocation] = useLocation();
+
+  const navItems = [
+    { label: "Charts", path: "/", icon: LineChart },
+    { label: "Compare", path: "/comparison", icon: LayoutGrid },
+    { label: "Community", path: "/community", icon: MessageSquare },
+    { label: "Models", path: "/models", icon: Database },
+  ];
 
   return (
     <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
@@ -35,30 +44,50 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                   <span className="font-bold text-lg tracking-tight">LLMView</span>
                 </div>
                 <nav className="flex-1 p-4 space-y-2">
-                  <NavItem icon={LineChart} label="Charts" active />
-                  <NavItem icon={MessageSquare} label="Community" />
-                  <NavItem icon={Database} label="Models" />
-                  <NavItem icon={LayoutGrid} label="Dashboard" />
+                  {navItems.map(({ label, path, icon: Icon }) => (
+                    <button
+                      key={path}
+                      onClick={() => {
+                        setLocation(path);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                        location === path
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                      }`}
+                    >
+                      <Icon className="h-5 w-5" />
+                      <span className="font-medium">{label}</span>
+                    </button>
+                  ))}
                 </nav>
               </div>
             </SheetContent>
           </Sheet>
 
-          <div className="flex items-center gap-2">
+          <button 
+            onClick={() => setLocation("/")}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
             <img src={logo} alt="LLMView Logo" className="h-8 w-8 rounded" />
-            <span className="hidden md:block font-bold text-xl tracking-tight font-display">LLMView</span>
-          </div>
+            <span className="hidden md:block font-bold text-xl tracking-tight">LLMView</span>
+          </button>
 
           <nav className="hidden md:flex items-center gap-1 ml-4">
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-              Products
-            </Button>
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-              Community
-            </Button>
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-              Markets
-            </Button>
+            {navItems.map(({ label, path }) => (
+              <button
+                key={path}
+                onClick={() => setLocation(path)}
+                className={`px-3 py-1 rounded-md transition-colors text-sm ${
+                  location === path
+                    ? "text-foreground bg-secondary/50"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/30"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </nav>
         </div>
 
@@ -93,20 +122,5 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         {children}
       </main>
     </div>
-  );
-}
-
-function NavItem({ icon: Icon, label, active }: { icon: any, label: string, active?: boolean }) {
-  return (
-    <button 
-      className={`w-full flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-        active 
-          ? "bg-primary/10 text-primary" 
-          : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-      }`}
-    >
-      <Icon className="h-5 w-5" />
-      <span className="font-medium">{label}</span>
-    </button>
   );
 }
