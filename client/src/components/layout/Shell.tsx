@@ -30,7 +30,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
       {/* Top Navigation Bar */}
-      <header className="h-14 border-b border-border flex items-center justify-between px-4 bg-card shrink-0 z-50">
+      <header className="h-14 border-b border-border flex items-center justify-between px-4 bg-white/50 backdrop-blur-sm shrink-0 z-50 shadow-sm">
         <div className="flex items-center gap-4">
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild className="md:hidden">
@@ -38,7 +38,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-64 bg-card p-0">
+            <SheetContent side="left" className="w-64 bg-white p-0">
               <div className="flex flex-col h-full">
                 <div className="h-14 flex items-center px-4 border-b border-border">
                   <span className="font-bold text-lg tracking-tight">LLMView</span>
@@ -70,8 +70,8 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             onClick={() => setLocation("/")}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
-            <img src={logo} alt="LLMView Logo" className="h-8 w-8 rounded" />
-            <span className="hidden md:block font-bold text-xl tracking-tight">LLMView</span>
+            <img src={logo} alt="LLMView Logo" className="h-8 w-8 rounded shadow-md" />
+            <span className="hidden md:block font-bold text-xl tracking-tight bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">LLMView</span>
           </button>
 
           <nav className="hidden md:flex items-center gap-1 ml-4">
@@ -79,10 +79,10 @@ export default function Shell({ children }: { children: React.ReactNode }) {
               <button
                 key={path}
                 onClick={() => setLocation(path)}
-                className={`px-3 py-1 rounded-md transition-colors text-sm ${
+                className={`px-3 py-1 rounded-md transition-all text-sm font-medium ${
                   location === path
-                    ? "text-foreground bg-secondary/50"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/30"
+                    ? "text-primary bg-blue-50 shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-white/50"
                 }`}
               >
                 {label}
@@ -96,21 +96,21 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input 
               placeholder="Search models, benchmarks, users..." 
-              className="pl-9 h-9 bg-secondary/50 border-transparent focus-visible:bg-background focus-visible:border-primary"
+              className="pl-9 h-9 bg-white/60 border-blue-100 focus-visible:bg-white focus-visible:border-primary shadow-sm"
             />
           </div>
           
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="text-muted-foreground">
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
               <Bell className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-muted-foreground">
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
               <Settings className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-muted-foreground">
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
               <User className="h-5 w-5" />
             </Button>
-            <Button className="hidden md:flex ml-2 bg-primary text-primary-foreground hover:bg-primary/90 h-8">
+            <Button className="hidden md:flex ml-2 bg-gradient-to-r from-primary to-blue-600 text-white hover:shadow-lg h-8 transition-all">
               Get Started
             </Button>
           </div>
