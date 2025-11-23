@@ -115,9 +115,28 @@
   }
 }
 
+* {
+  /* Premium text rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+html {
+  /* Improve font rendering at system level */
+  scroll-behavior: smooth;
+}
+
 body {
   @apply bg-background text-foreground;
-  font-feature-settings: "rlig" 1, "calt" 1;
+  
+  /* Enhanced typography defaults */
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  letter-spacing: 0.3px;
+  font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+  font-variation-settings: "opsz" auto;
   
   /* Radial Animated Background */
   background: radial-gradient(
@@ -173,18 +192,148 @@ html::before {
   * {
     @apply border-border;
   }
+
+  /* Typography Hierarchy */
+  h1 {
+    @apply text-4xl font-bold tracking-tight leading-tight;
+    letter-spacing: -0.5px;
+  }
+
+  h2 {
+    @apply text-3xl font-bold tracking-tight leading-tight;
+    letter-spacing: -0.3px;
+  }
+
+  h3 {
+    @apply text-2xl font-bold tracking-tight;
+  }
+
+  h4 {
+    @apply text-xl font-semibold tracking-tight;
+  }
+
+  h5 {
+    @apply text-lg font-semibold;
+  }
+
+  h6 {
+    @apply text-base font-semibold;
+  }
+
+  p {
+    @apply leading-relaxed;
+    color: hsl(var(--foreground));
+  }
+
+  a {
+    @apply text-primary hover:text-primary/80 transition-colors underline-offset-2;
+  }
+
+  code {
+    @apply font-mono text-sm bg-secondary/50 px-1.5 py-0.5 rounded border border-border;
+  }
+
+  pre {
+    @apply bg-secondary/50 p-4 rounded-lg border border-border overflow-x-auto;
+  }
+
+  /* Form elements */
+  input, textarea, select {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
-  
+
+  /* Text quality improvements */
+  .text-primary {
+    color: hsl(var(--primary));
+  }
+
+  .text-foreground {
+    color: hsl(var(--foreground));
+    font-weight: 500;
+  }
+
+  .text-muted-foreground {
+    color: hsl(var(--muted-foreground));
+    font-weight: 400;
+  }
+
+  /* Typography utility classes */
+  .font-display {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+
+  .font-heading {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+    line-height: 1.3;
+  }
+
+  .font-body {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.3px;
+    line-height: 1.6;
+  }
+
+  .font-mono-tight {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+    letter-spacing: 0px;
+    line-height: 1.4;
+  }
+
+  .text-tight {
+    line-height: 1.2;
+    letter-spacing: 0px;
+  }
+
+  .text-loose {
+    line-height: 1.8;
+    letter-spacing: 0.5px;
+  }
+
+  /* Improved text contrast utilities */
+  .text-strong {
+    color: hsl(var(--foreground));
+    font-weight: 600;
+    letter-spacing: 0px;
+  }
+
+  .text-subtle {
+    color: hsl(var(--muted-foreground));
+    font-weight: 400;
+  }
+
+  /* Typography for different contexts */
+  .prose {
+    @apply text-foreground leading-relaxed;
+  }
+
+  .prose-sm {
+    @apply text-sm leading-relaxed;
+  }
+
+  .prose-lg {
+    @apply text-lg leading-relaxed;
+  }
+
+  /* Shimmer effect */
   .shimmer {
     position: relative;
     overflow: hidden;
   }
-  
+
   .shimmer::after {
     content: "";
     position: absolute;
@@ -207,17 +356,6 @@ html::before {
       rgba(210, 100% 50%, 0.1) 0%,
       transparent 70%
     );
-  }
-
-  .hover-elevate:not(.no-default-hover-elevate)::after,
-  .active-elevate:not(.no-default-active-elevate)::after,
-  .hover-elevate-2:not(.no-default-hover-elevate)::after,
-  .active-elevate-2:not(.no-default-active-elevate)::after {
-    background: radial-gradient(
-      circle at 50% 50%,
-      rgba(210, 100% 50%, 0.08) 0%,
-      transparent 70%
-    ) !important;
   }
 
   /* Card shimmer effect */
@@ -263,4 +401,15 @@ html::before {
 
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(210, 100%, 50%);
+}
+
+/* Selection styling */
+::selection {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+::-moz-selection {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
 }
