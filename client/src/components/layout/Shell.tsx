@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useLocation } from "wouter";
+import TickerTape from "@/components/dashboard/TickerTape";
 import logo from "@assets/generated_images/a_sleek,_modern,_abstract_logo_for_an_ai_analytics_platform_called_llmview.png";
 
 export default function Shell({ children }: { children: React.ReactNode }) {
@@ -116,6 +117,9 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </header>
+
+      {/* Market Ticker */}
+      <TickerTape />
 
       {/* Main Content */}
       <main className="flex-1 flex overflow-hidden">
