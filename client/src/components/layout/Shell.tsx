@@ -45,7 +45,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             <SheetContent side="left" className="w-64 bg-white p-0">
               <div className="flex flex-col h-full">
                 <div className="h-14 flex items-center px-4 border-b border-border">
-                  <span className="font-bold text-lg tracking-tight">LLMView</span>
+                  <span className="font-bold text-lg tracking-tight">iAi.dev</span>
                 </div>
                 <nav className="flex-1 p-4 space-y-2">
                   {navItems.map(({ label, path, icon: Icon }) => (
@@ -74,8 +74,8 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             onClick={() => setLocation("/")}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
-            <img src={logo} alt="LLMView Logo" className="h-8 w-8 rounded shadow-md" />
-            <span className="hidden md:block font-bold text-xl tracking-tight bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">LLMView</span>
+            <img src={logo} alt="iAi.dev Logo" className="h-8 w-8 rounded shadow-md" />
+            <span className="hidden md:block font-bold text-xl tracking-tight bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">iAi.dev</span>
           </button>
 
           <nav className="hidden md:flex items-center gap-1 ml-4">
