@@ -3,10 +3,10 @@ import { Clock, Bell, X, AlertCircle, TrendingUp, Package, Zap, MessageSquare } 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 
 interface Notification {
@@ -95,9 +95,9 @@ export default function TimeNotificationHub() {
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-md hover:bg-white/50 transition-colors cursor-pointer relative group">
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <button className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-md hover:bg-white/50 transition-colors cursor-pointer relative group outline-none">
           <div className="flex items-center gap-1.5">
             <Clock className="h-4 w-4 text-muted-foreground" />
             <span className="font-mono font-bold text-sm text-foreground tracking-wider">
@@ -107,18 +107,18 @@ export default function TimeNotificationHub() {
           {unreadCount > 0 && (
             <Badge 
               variant="destructive" 
-              className="text-[10px] px-1.5 h-5 absolute -top-1 -right-1"
+              className="text-[10px] px-1.5 h-5 absolute -top-1 -right-1 pointer-events-none"
             >
               {unreadCount}
             </Badge>
           )}
-          <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-xs text-muted-foreground whitespace-nowrap">
+          <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-xs text-muted-foreground whitespace-nowrap pointer-events-none">
             Notifications Hub
           </div>
         </button>
-      </PopoverTrigger>
+      </DropdownMenuTrigger>
 
-      <PopoverContent className="w-96 p-0" align="center">
+      <DropdownMenuContent className="w-96 p-0" align="center">
         <div className="flex flex-col h-96">
           {/* Header */}
           <div className="px-4 py-3 border-b border-border bg-secondary/30 sticky top-0">
@@ -213,7 +213,7 @@ export default function TimeNotificationHub() {
             </div>
           )}
         </div>
-      </PopoverContent>
-    </Popover>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
