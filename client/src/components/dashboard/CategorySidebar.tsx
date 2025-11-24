@@ -1,61 +1,101 @@
 import { useState } from "react";
-import { 
-  TrendingUp, 
-  Zap, 
-  DollarSign, 
-  Lock, 
-  Unlock, 
-  BarChart3, 
-  Brain,
-  Code,
-  Lightbulb,
-  Users,
-  ChevronDown
-} from "lucide-react";
+import { ChevronDown, Grid2X2, Package, Bot, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
-
-const categories = [
-  {
-    name: "Performance",
-    items: [
-      { icon: TrendingUp, label: "Reasoning (MMLU)", active: true },
-      { icon: Code, label: "Coding (HumanEval)" },
-      { icon: Brain, label: "Math (GSM8K)" },
-      { icon: BarChart3, label: "Knowledge (ARC-C)" },
-    ]
-  },
-  {
-    name: "Cost Analysis",
-    items: [
-      { icon: DollarSign, label: "Input Pricing" },
-      { icon: Zap, label: "Throughput" },
-      { icon: Lightbulb, label: "Efficiency Ratio" },
-    ]
-  },
-  {
-    name: "Model Type",
-    items: [
-      { icon: Lock, label: "Proprietary Models" },
-      { icon: Unlock, label: "Open Source" },
-      { icon: Users, label: "Frontier Models" },
-    ]
-  }
-];
+import { MODELS, PROVIDERS } from "@/lib/mockData";
 
 interface CategorySidebarProps {
   comparisonMode?: boolean;
   onComparisonModeChange?: (enabled: boolean) => void;
 }
 
+// Mock agents data
+const AGENTS = [
+  { id: "agent-1", name: "Code Analyst", modelIds: ["gpt-5.1", "claude-sonnet-4.5", "gemini-3-pro"] },
+  { id: "agent-2", name: "Research Assistant", modelIds: ["gemini-3-pro", "grok-4.1", "kimi-k2-thinking"] },
+  { id: "agent-3", name: "Data Extractor", modelIds: ["claude-3.5-sonnet", "gpt-4o", "llama-4-scout"] },
+  { id: "agent-4", name: "Math Solver", modelIds: ["kimi-k2-thinking", "gemini-3-pro", "deepseek-r1"] },
+];
+
 export default function CategorySidebar({ comparisonMode = false, onComparisonModeChange }: CategorySidebarProps) {
-  const [expanded, setExpanded] = useState<string | null>("Performance");
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    providers: true,
+    models: true,
+    agents: false,
+  });
+  
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const toggleItem = (id: string) => {
+    setExpandedItems(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  // Build provider to models mapping
+  const getModelsForProvider = (providerId: string) => {
+    const provider = PROVIDERS[providerId];
+    if (!provider) return [];
+    return provider.endpoints.map(ep => MODELS[ep.modelId]).filter(Boolean);
+  };
+
+  // Build model to providers mapping
+  const getProvidersForModel = (modelId: string) => {
+    return Object.values(PROVIDERS).filter(provider =>
+      provider.endpoints.some(ep => ep.modelId === modelId)
+    );
+  };
+
+  const SectionHeader = ({ icon: Icon, title, section }: any) => (
+    <button
+      onClick={() => toggleSection(section)}
+      className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/50 transition-colors font-semibold text-sm"
+    >
+      <div className="flex items-center gap-2">
+        <Icon className="h-4 w-4" />
+        {title}
+      </div>
+      <ChevronDown
+        className={`h-4 w-4 transition-transform ${expandedSections[section] ? '' : '-rotate-90'}`}
+      />
+    </button>
+  );
+
+  const ItemRow = ({ id, name, icon: Icon, onClick }: any) => (
+    <button
+      onClick={() => toggleItem(id)}
+      className="w-full flex items-center justify-between px-6 py-2 text-xs hover:bg-secondary/30 transition-colors group"
+    >
+      <div className="flex items-center gap-2 min-w-0">
+        {Icon && <Icon className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />}
+        <span className="truncate text-foreground text-left">{name}</span>
+      </div>
+      <ChevronDown
+        className={`h-3 w-3 transition-transform flex-shrink-0 ${expandedItems[id] ? '' : '-rotate-90'} text-muted-foreground group-hover:text-foreground`}
+      />
+    </button>
+  );
+
+  const NestedItem = ({ name, color, size = "small" }: any) => (
+    <div className="flex items-center gap-2 px-8 py-1.5 text-xs text-muted-foreground hover:text-foreground">
+      {color && (
+        <div
+          className={`rounded-full flex-shrink-0 ${size === "small" ? "w-2 h-2" : "w-2.5 h-2.5"}`}
+          style={{ backgroundColor: color }}
+        />
+      )}
+      <span className="truncate">{name}</span>
+    </div>
+  );
 
   return (
     <div className="flex flex-col h-full w-64 bg-card border-r border-border">
+      {/* Header */}
       <div className="p-4 border-b border-border space-y-3">
-        <h2 className="font-bold text-lg tracking-tight">Categories</h2>
+        <h2 className="font-bold text-lg tracking-tight">Navigator</h2>
         {/* Comparison Mode Toggle */}
         <div className="flex items-center gap-2 p-2.5 rounded-lg bg-secondary/30 border border-border/50 hover:bg-secondary/40 transition-colors cursor-pointer">
           <Checkbox
@@ -74,45 +114,116 @@ export default function CategorySidebar({ comparisonMode = false, onComparisonMo
         </div>
       </div>
 
+      {/* Content */}
       <ScrollArea className="flex-1">
         <div className="flex flex-col">
-          {categories.map((category) => (
-            <div key={category.name} className="border-b border-border/50">
-              <button
-                onClick={() => setExpanded(expanded === category.name ? null : category.name)}
-                className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/50 transition-colors text-foreground font-semibold text-sm"
-              >
-                {category.name}
-                <ChevronDown 
-                  className={`h-4 w-4 transition-transform ${expanded === category.name ? '' : '-rotate-90'}`}
-                />
-              </button>
-              
-              {expanded === category.name && (
-                <div className="bg-secondary/20 flex flex-col">
-                  {category.items.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <button
-                        key={item.label}
-                        className={`flex items-center gap-3 px-6 py-2 text-xs transition-colors ${
-                          item.active
-                            ? 'text-primary bg-primary/10'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-secondary/30'
-                        }`}
-                      >
-                        <Icon className="h-4 w-4" />
-                        <span className="truncate">{item.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          ))}
+          {/* PROVIDERS SECTION */}
+          <div className="border-b border-border/50">
+            <SectionHeader icon={Building2} title="Providers" section="providers" />
+            {expandedSections.providers && (
+              <div className="bg-secondary/10">
+                {Object.values(PROVIDERS).map((provider) => {
+                  const itemId = `provider-${provider.id}`;
+                  const models = getModelsForProvider(provider.id);
+                  return (
+                    <div key={provider.id}>
+                      <ItemRow
+                        id={itemId}
+                        name={provider.name}
+                        icon={Building2}
+                      />
+                      {expandedItems[itemId] && (
+                        <div className="bg-secondary/5">
+                          {models.map((model) => (
+                            <NestedItem
+                              key={model.id}
+                              name={model.name}
+                              color={model.color}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* MODELS SECTION */}
+          <div className="border-b border-border/50">
+            <SectionHeader icon={Package} title="Models" section="models" />
+            {expandedSections.models && (
+              <div className="bg-secondary/10">
+                {Object.values(MODELS).map((model) => {
+                  const itemId = `model-${model.id}`;
+                  const providers = getProvidersForModel(model.id);
+                  return (
+                    <div key={model.id}>
+                      <ItemRow
+                        id={itemId}
+                        name={model.name}
+                        icon={Package}
+                      />
+                      {expandedItems[itemId] && (
+                        <div className="bg-secondary/5">
+                          {providers.length > 0 ? (
+                            providers.map((provider) => (
+                              <NestedItem
+                                key={provider.id}
+                                name={provider.name}
+                              />
+                            ))
+                          ) : (
+                            <NestedItem name="No providers" />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* AGENTS SECTION */}
+          <div className="border-b border-border/50">
+            <SectionHeader icon={Bot} title="Agents" section="agents" />
+            {expandedSections.agents && (
+              <div className="bg-secondary/10">
+                {AGENTS.map((agent) => {
+                  const itemId = `agent-${agent.id}`;
+                  return (
+                    <div key={agent.id}>
+                      <ItemRow
+                        id={itemId}
+                        name={agent.name}
+                        icon={Bot}
+                      />
+                      {expandedItems[itemId] && (
+                        <div className="bg-secondary/5">
+                          {agent.modelIds.map((modelId) => {
+                            const model = MODELS[modelId];
+                            return model ? (
+                              <NestedItem
+                                key={modelId}
+                                name={model.name}
+                                color={model.color}
+                              />
+                            ) : null;
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </ScrollArea>
 
+      {/* Footer */}
       <div className="p-4 border-t border-border space-y-2">
         <Button className="w-full h-8 text-xs bg-primary/20 text-primary hover:bg-primary/30">
           Save View
