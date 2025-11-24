@@ -1,0 +1,1420 @@
+# LLMView Platform: Comprehensive Product Requirements Document (PRD) v2.0
+
+**Document Version:** 2.0  
+**Last Updated:** November 23, 2025  
+**Status:** In Development  
+**Platform Scope:** Web Application (M1 Pro macOS primary, iOS future consideration)  
+**Business Focus:** LLM Cost Intelligence Platform with TradingView-style Analytics
+
+---
+
+## Executive Summary
+
+LLMView v2.0 reimagines the original "TradingView for LLMs" concept by consolidating lessons learned and adopting a modular, provider-aware architecture. The platform transitions from a single-model analysis view to a **multi-dimensional comparison system** where models, providers, benchmarks, and cost metrics interact dynamically—similar to how TradingView handles equities, crypto, and forex markets.
+
+**Core Pivot:** From "comprehensive analytics tool" → **"LLM Cost Intelligence Platform"** that helps enterprises optimize spending through:
+- Real-time provider price/performance tracking
+- Multi-model comparison with latency stratification by provider
+- Smart routing recommendations based on cost & performance objectives
+- Benchmark tracking across standardized tests (MMLU-Pro, GPQA, IFEval, etc.)
+
+---
+
+## Part 1: Current State Analysis
+
+### 1.1 Existing Implementation Review
+
+**What's Working:**
+- Core charting infrastructure (MMLU-specific line chart for GPT-4)
+- Model sidebar with watchlist functionality (right-aligned, TradingView-inspired)
+- Category system (Performance, Cost Analysis, Model Type)
+- Benchmark tabs (Overview, Benchmarks, Discussion, Code)
+- Navigation structure (Charts, Compare, Community, Models)
+
+**Critical Gaps:**
+1. **Single-Model View Only** — No multi-model overlay or comparison mode
+2. **Provider Abstraction Missing** — Latency shown but no provider attribution
+3. **Left Sidebar Unused** — Opportunity for contextual model list (currently showing categories)
+4. **Limited Tool Integration** — No memory calculator, routing simulator, cost advisor
+5. **Non-Interactive Filters** — Categories exist but don't dynamically filter the chart
+6. **No Provider Registry** — Providers (OpenAI, Anthropic, Groq, etc.) not displayed as first-class entities
+
+### 1.2 TradingView Component Mapping
+
+For reference, here's how TradingView's architecture applies to LLMs:
+
+| TradingView Concept | Crypto/Stock Equivalent | LLM Equivalent |
+|---|---|---|
+| Security (Ticker) | BTC, AAPL | GPT-4, Claude 3.5, Llama 3.3 |
+| Exchange | Binance, NYSE | OpenAI API, Anthropic, Together AI, Groq |
+| Price Chart | Historical price | Benchmark performance over time |
+| Order Book | Live bids/asks | Provider pricing tiers & availability |
+| Watchlist | Saved securities | Saved models/provider combinations |
+| Technical Indicators | RSI, MACD, Bollinger | Cost/latency efficiency ratios, benchmark deltas |
+| Screener | Filter by criteria | Filter models by: cost, speed, benchmark scores, providers |
+| Alerts | Price breakouts | Performance regressions, price increases, new providers |
+
+---
+
+## Part 2: Detailed Requirements Specification
+
+### 2.1 Primary Feature Requirements (MVP+ Phase)
+
+#### Requirement 1: Multi-Model Comparison View
+**Status:** Critical Path  
+**Priority:** P0 (Must Have)
+
+**User Story:**
+```
+As a platform engineer evaluating LLM costs, I want to overlay 2-5 models on the same 
+benchmark chart to understand performance deltas and cost efficiency trade-offs, so I can 
+make informed provider selection decisions.
+```
+
+**Functional Requirements:**
+1. **Model Selection Mechanism**
+   - Expandable left sidebar with searchable model list (minimum 50+ models)
+   - Toggle/checkbox interface to add/remove models from chart
+   - "Add Model" button with fuzzy-search autocomplete
+   - "Clear All" action to reset selection
+   - Color-coded models (consistent per session; saved to user preferences)
+
+2. **Multi-Model Chart Behavior**
+   - Overlay up to 5 models simultaneously on single line chart
+   - Separate Y-axis for each model's benchmark score (normalized 0-100)
+   - Legend showing model name, creator, provider(s), current score
+   - Hover tooltip shows: model name, benchmark score, rank, provider, latency
+   - Benchmark selector (dropdown): MMLU-Pro, GPQA, IFEval, HumanEval, GSM8K, MATH, etc.
+   - Time range selector: 1M, 3M, 6M, YTD, ALL
+
+3. **Export/Share Functionality**
+   - "Save View" button creates shareable snapshot with persistent URL
+   - "Export PNG" generates high-quality chart image for reports
+   - "Copy CSV" exports underlying data for models shown
+
+**Technical Implementation Notes:**
+- Use Recharts or D3.js multi-series with dynamic axis generation
+- Store user's last 5 model selections in localStorage
+- API endpoint: `/api/v1/benchmarks/multi-model?models=gpt-4,claude-3.5,llama-3.3&benchmark=mmlu-pro&timeframe=6m`
+
+---
+
+#### Requirement 2: Provider Registry & Latency Stratification
+**Status:** Critical Path  
+**Priority:** P0 (Must Have)
+
+**User Story:**
+```
+As a cost optimization officer, I want to see which providers offer each model with their 
+specific pricing and latency characteristics, so I can route queries intelligently without 
+assuming uniform performance across providers.
+```
+
+**Functional Requirements:**
+1. **Provider List View** (New Component)
+   - Dedicated tab or modal: "Providers"
+   - List/Table showing:
+     - Provider name (OpenAI, Anthropic, Together AI, Groq, Hugging Face, etc.)
+     - Models hosted
+     - Pricing (input $/1M tokens, output $/1M tokens, blended)
+     - Latency metrics (TTFT: Time-to-First-Token in ms, output speed: tokens/sec)
+     - SLA/Uptime (if available)
+     - Last updated timestamp
+   - Filter by: supported models, price range, latency threshold, geography
+   - Sort by: latency, price, reliability, alphabetical
+
+2. **Provider-Specific Latency Integration**
+   - Chart header shows selected model + providers
+   - When multiple providers for same model, display as separate sub-lines (transparent or dashed)
+   - Example: GPT-4 via OpenAI (solid blue), GPT-4 via Azure (dashed blue)
+   - Tooltip on provider line shows: provider name, TTFT, output speed, current endpoint status
+
+3. **Provider Status Indicator**
+   - Green (operational), yellow (degraded), red (down) status pills
+   - Status API endpoint updates every 30 seconds
+   - Bell icon notification if provider status changes
+
+**Data Model Example:**
+```json
+{
+  "provider": {
+    "id": "openai",
+    "name": "OpenAI",
+    "status": "operational",
+    "lastChecked": "2025-11-23T16:53:00Z",
+    "endpoints": [
+      {
+        "modelId": "gpt-4",
+        "modelName": "GPT-4 Turbo",
+        "pricing": {
+          "input_1m_tokens": 10.0,
+          "output_1m_tokens": 30.0,
+          "blended_3_to_1": 13.33
+        },
+        "latency": {
+          "ttft_ms": 450,
+          "output_tokens_per_sec": 3.2
+        },
+        "region": "us-east-1"
+      }
+    ]
+  }
+}
+```
+
+---
+
+#### Requirement 3: Left Sidebar Model Navigator (TradingView-Style)
+**Status:** Critical Path  
+**Priority:** P0 (Must Have)
+
+**User Story:**
+```
+As a developer quickly evaluating models, I want a persistent left sidebar showing all 
+available models organized by category (size, cost tier, reasoning capability), so I can 
+rapidly browse and compare without leaving the page.
+```
+
+**Functional Requirements:**
+1. **Sidebar Structure**
+   - Width: 280px (collapsible to 60px icon-only mode)
+   - Sticky positioning, scrollable content
+   - Search bar at top with fuzzy matching
+   - Organize by collapsible sections:
+     - **Popular** (GPT-4, Claude 3.5, Llama 3.3, DeepSeek)
+     - **By Size** (Nano <1B, Small 1-7B, Medium 7-13B, Large 13-70B, Frontier >70B)
+     - **By Cost Tier** (Free tier, Budget, Mid-market, Enterprise)
+     - **By Capability** (Reasoning, Coding, Multimodal, Open-source)
+     - **By Provider** (OpenAI, Anthropic, Meta, Groq, Together AI, etc.)
+   - Each model entry shows:
+     - Model name
+     - Creator logo/icon
+     - Quick metrics badge: benchmark score, $/1M tokens, latency
+
+2. **Interaction Patterns**
+   - Click model → loads single-model view
+   - Drag model to right chart area → adds to multi-model comparison
+   - Right-click → context menu (Add to watchlist, View details, Compare with...)
+   - Favorite/star icon → adds to sidebar "Favorites" section (persistent)
+   - Live indicator (green dot) if model trending upward in benchmarks
+
+3. **Model Entry Detail Hover State**
+   - Tooltip showing: full model name, release date, parameter count, context window
+   - Mini sparkline showing benchmark trend (7-day or 30-day)
+
+**Technical Notes:**
+- Use React Tree component with virtualization for 50+ models
+- API: `/api/v1/models/all?sort=popular,performance,cost`
+- Cache model list with 1-hour TTL
+
+---
+
+#### Requirement 4: Provider Comparison & Selection
+**Status:** Secondary Path  
+**Priority:** P1 (Should Have)
+
+**User Story:**
+```
+As an infrastructure engineer, I want to quickly compare pricing and performance for the 
+same model across different providers, so I can optimize for cost/latency trade-offs.
+```
+
+**Functional Requirements:**
+1. **Provider Comparison View**
+   - Matrix/table: rows = providers, columns = pricing + latency metrics
+   - For selected model (e.g., GPT-4), show all available endpoints with:
+     - Input/output pricing
+     - TTFT (time to first token)
+     - Output speed (tokens/sec)
+     - Reliability/uptime SLA
+     - Geographical region
+   - Highlight: cheapest, fastest, most reliable (visual badges)
+   - "Route to cheapest" or "Route to fastest" quick-action buttons
+
+2. **Provider Switch Integration**
+   - When viewing multi-model chart, show mini provider selector per model
+   - Example: GPT-4 [OpenAI ▼ | Azure | TogetherAI]
+   - Switching provider updates latency/pricing on chart without reloading
+
+---
+
+### 2.2 Secondary Feature Requirements (Extended Phase)
+
+#### Requirement 5: Advanced Filtering & Screener
+**Status:** Secondary Path  
+**Priority:** P1 (Should Have)
+
+**User Story:**
+```
+As a platform architect, I want to filter models by multiple criteria (cost < $5/1M tokens, 
+latency < 100ms, MMLU-Pro > 85%, open-source only) to find optimal candidates without 
+manual comparison.
+```
+
+**Functional Requirements:**
+1. **Filter Panel** (Sidebar or Modal)
+   - Cost range slider (min, max $/1M tokens)
+   - Latency threshold slider (ms)
+   - Benchmark score minimum (dropdown for each benchmark: MMLU-Pro, GPQA, etc.)
+   - Model type: Open-source, proprietary, or both
+   - Provider whitelist/blacklist
+   - Context window minimum (tokens)
+   - Multimodal capability toggle
+   - Reasoning capability toggle
+   - "Apply Filters" button
+   - "Save Filter" named presets (e.g., "Budget AWS Inference", "Maximum Speed Groq")
+
+2. **Results Display**
+   - Filtered models displayed in left sidebar under "Filtered Results"
+   - Count badge: "24 models match your criteria"
+   - Ability to sort results: by cost, latency, benchmark score, popularity
+
+---
+
+#### Requirement 6: Benchmark Heatmap & Performance Matrix
+**Status:** Secondary Path  
+**Priority:** P2 (Nice to Have)
+
+**User Story:**
+```
+As a research team evaluating models, I want to see performance across multiple benchmarks 
+simultaneously in a heatmap view, so I can identify models' strengths/weaknesses per domain.
+```
+
+**Functional Requirements:**
+1. **Heatmap Grid**
+   - Rows: models (selected set, or all popular models)
+   - Columns: benchmarks (MMLU-Pro, GPQA, IFEval, HumanEval, GSM8K, MATH, LiveCodeBench, AIME)
+   - Cells: colored by score (red 0%, yellow 50%, green 100%)
+   - Cell values: exact scores (e.g., 85.2)
+   - Hover: show benchmark description & model name tooltip
+
+2. **Sorting & Filtering**
+   - Sort rows by: average score, specific benchmark, name, cost
+   - Sort columns by: difficulty, relevance, latest update date
+   - Toggle columns on/off
+
+3. **Export**
+   - "Export as PNG" for reports
+   - "Export as CSV" for data analysis
+
+---
+
+#### Requirement 7: Cost Intelligence Calculator & Routing Advisor
+**Status:** Tertiary Path  
+**Priority:** P2 (Nice to Have)
+
+**User Story:**
+```
+As a DevOps engineer running production inference workloads, I want to input my query patterns 
+(e.g., 70% simple queries to Claude, 30% complex reasoning to GPT-4) and get cost-optimized 
+routing recommendations plus monthly spend projections, so I can justify infrastructure 
+decisions to management.
+```
+
+**Functional Requirements:**
+1. **Workload Definition**
+   - Input: monthly query volume, distribution of query types (simple QA, code generation, reasoning, summarization)
+   - Input: average tokens per query (input & output)
+   - Input: acceptable latency threshold per query type
+
+2. **Cost Projection**
+   - Calculates monthly cost for each model at given volume
+   - Displays: total cost, cost per 1M tokens (blended), cost per query
+   - Comparison table: Model A ($500/month) vs Model B ($300/month) vs Hybrid ($350/month)
+
+3. **Routing Recommendations**
+   - "Smart Router" algorithm suggests: route 80% to Claude (cheap), 20% to GPT-4 (reasoning)
+   - Projected savings vs single-model approach
+   - "Apply Routing Config" button exports JSON for integration with smart router
+
+---
+
+### 2.3 UX/UI Component Redesigns (TradingView Reimagined)
+
+#### Component 1: Chart/Watchlist Split View
+**Current State:** Right-aligned watchlist  
+**New State:** Dual-pane persistent layout
+```
+[Left Sidebar: Model Navigator] | [Main Chart] | [Right Panel: Watchlist + Alerts]
+```
+
+#### Component 2: Tabs Organization
+**Current Tabs:** Overview, Benchmarks, Discussion, Code  
+**Proposed New Tabs:**
+- **Overview** — Key metrics, chart, model details
+- **Benchmarks** — All benchmarks + heatmap view
+- **Providers** — Pricing/latency by provider
+- **Comparison** — Side-by-side model details
+- **Community** — Discussions, reviews (if keeping)
+- **Code** — Integration examples, API samples
+
+#### Component 3: Real-Time Status Indicators
+Similar to TradingView's price movement:
+- Green ↑ / Red ↓ for benchmark score changes (7-day, 30-day)
+- Provider status: operational / degraded / down
+- "Just updated" timestamps
+
+#### Component 4: Search & Navigation
+**Global Search Bar:**
+- Search models, providers, benchmarks
+- Recent searches
+- Trending models (machine learning based on community activity)
+- Quick links: "Compare [model A] vs [model B]", "Cheapest model > 85 MMLU-Pro"
+
+---
+
+## Part 3: Technical Architecture & Data Flow
+
+### 3.1 Frontend Component Tree
+
+```
+App
+├── TopNav (Search, Auth, Settings)
+├── LeftSidebar (Model Navigator)
+│   ├── SearchBar
+│   ├── Favorites
+│   ├── PopularModels
+│   ├── FilterPanel
+│   └── ModelTree (virtualized)
+├── MainContent
+│   ├── ChartContainer (Responsive)
+│   │   ├── BenchmarkSelector
+│   │   ├── MultiModelChart (Recharts)
+│   │   ├── TimeRangeSelector
+│   │   └── Legend
+│   ├── TabBar
+│   └── TabContent
+│       ├── OverviewTab
+│       ├── BenchmarksTab
+│       ├── ProvidersTab
+│       ├── ComparisonTab
+│       └── CommunityTab
+└── RightPanel
+    ├── Watchlist
+    ├── ModelDetails
+    └── AlertManager
+```
+
+### 3.2 Core Data Models
+
+**Model Entity:**
+```typescript
+interface Model {
+  id: string;
+  name: string;
+  creator: string;
+  releaseDate: Date;
+  parameterCount: number;
+  contextWindow: number;
+  isOpenSource: boolean;
+  benchmarks: {
+    [benchmarkName: string]: {
+      score: number;
+      timestamp: Date;
+      percentile: number;
+    }
+  };
+  capabilities: {
+    isReasoning: boolean;
+    isMultimodal: boolean;
+    isCode: boolean;
+  };
+  providers: string[]; // provider IDs
+  metadata: {
+    trainingDataCutoff: Date;
+    license: string;
+    documentation: URL;
+  }
+}
+```
+
+**Provider Entity:**
+```typescript
+interface Provider {
+  id: string;
+  name: string;
+  status: 'operational' | 'degraded' | 'down';
+  endpoints: {
+    modelId: string;
+    pricing: {
+      input_per_1m_tokens: number;
+      output_per_1m_tokens: number;
+    };
+    latency: {
+      ttft_ms: number;
+      output_tokens_per_sec: number;
+    };
+    regions: string[];
+    sla: string;
+  }[];
+  statusPageUrl: URL;
+  documentation: URL;
+}
+```
+
+**Benchmark Entity:**
+```typescript
+interface Benchmark {
+  id: string;
+  name: string;
+  description: string;
+  difficulty: 'elementary' | 'intermediate' | 'advanced' | 'expert';
+  domain: string[]; // e.g., ['reasoning', 'knowledge', 'coding']
+  totalQuestions: number;
+  dataSource: string;
+  paper: URL;
+}
+```
+
+### 3.3 API Endpoints (RESTful Design)
+
+**Models:**
+- `GET /api/v1/models` — List all models (paginated, filterable)
+- `GET /api/v1/models/:id` — Model details with full benchmark history
+- `GET /api/v1/models/search?q=gpt` — Fuzzy search
+
+**Benchmarks:**
+- `GET /api/v1/benchmarks` — List all benchmarks
+- `GET /api/v1/benchmarks/:id/scores?modelIds=gpt-4,claude-3.5&timeframe=6m` — Multi-model benchmark data
+- `GET /api/v1/benchmarks/heatmap?modelIds=...&benchmarkIds=...` — Heatmap data
+
+**Providers:**
+- `GET /api/v1/providers` — List all providers
+- `GET /api/v1/providers/:id` — Provider details + endpoints
+- `GET /api/v1/providers/:id/status` — Real-time status (WebSocket preferred)
+
+**Comparison:**
+- `GET /api/v1/compare?modelIds=gpt-4,claude-3.5` — Multi-model comparison data
+- `GET /api/v1/compare/providers?modelId=gpt-4` — Providers offering this model
+
+**Cost Calculator:**
+- `POST /api/v1/cost-analysis` — Submit workload spec, get projections
+- `POST /api/v1/routing-recommendations` — Get smart routing config
+
+---
+
+## Part 4: Implementation Roadmap & Timeline
+
+### Phase 1: Foundation (Weeks 1-3) — 3 weeks
+**Focus:** Left sidebar + multi-model chart + provider data
+
+#### Week 1: Data & API Setup
+**Deliverables:**
+- [ ] Audit existing benchmark data sources (llm-stats.com, Artificial Analysis API, HuggingFace)
+- [ ] Design Model, Provider, Benchmark schemas
+- [ ] Build Express.js middleware to aggregate 3+ benchmark sources into unified API
+- [ ] Set up PostgreSQL tables: models, benchmarks, providers, pricing, latency_metrics
+- [ ] Implement caching layer (Redis) for provider status (30-second TTL) and benchmark data (1-hour TTL)
+
+**Tasks with Prompts:**
+```
+1. Integration Task: "Connect to Artificial Analysis API (/api/v2/data/llms/models)
+   Extract: model name, evaluations (MMLU-Pro, GPQA, IFEval, HumanEval, etc.), 
+   pricing (blended rate). Map to Model schema. Run daily sync cron job."
+
+2. Data Normalization: "Create function to normalize benchmark scores across 
+   different sources into 0-100 scale. MMLU-Pro is 0-1 scale, GPQA is 0-1 scale, 
+   IFEval is percentage. Handle missing data with 'N/A' fallbacks."
+
+3. Provider Registry: "Hardcode initial provider list (OpenAI, Anthropic, Together AI, 
+   Groq, HuggingFace, Azure). Fetch pricing from provider APIs if available, else 
+   from llm-stats.com. Store with update timestamps."
+```
+
+**Prerequisites:**
+- API keys: Artificial Analysis (free tier 1000 req/day), Together AI (if needed)
+- PostgreSQL setup complete with schemas
+- Node.js environment ready
+
+**Success Criteria:**
+- ✓ 100+ models loaded in database
+- ✓ 8+ benchmarks synced with scores
+- ✓ 5+ providers with pricing/latency data
+- ✓ All data queryable via REST endpoints
+
+---
+
+#### Week 2: Left Sidebar & Model Navigator
+**Deliverables:**
+- [ ] React component: LeftSidebar with collapsible sections
+- [ ] Search functionality (fuzzy matching via fuse.js)
+- [ ] Model list virtualization (react-window for 50+ models)
+- [ ] Favorites persistence (localStorage + optional DB sync)
+- [ ] Model entry click handler (routes to single-model view)
+
+**Code Implementation Example (React + TypeScript):**
+```typescript
+// components/LeftSidebar.tsx
+import { useState, useMemo } from 'react';
+import Fuse from 'fuse.js';
+import { FixedSizeList as List } from 'react-window';
+import { Model } from '@/types';
+
+interface LeftSidebarProps {
+  models: Model[];
+  selectedModels: string[];
+  onSelectModel: (modelId: string) => void;
+  onAddToChart: (modelId: string) => void;
+}
+
+export function LeftSidebar({ models, selectedModels, onSelectModel, onAddToChart }: LeftSidebarProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [collapsed, setCollapsed] = useState(false);
+
+  // Fuse.js setup for fuzzy search
+  const fuse = useMemo(
+    () => new Fuse(models, {
+      keys: ['name', 'creator'],
+      threshold: 0.3,
+    }),
+    [models]
+  );
+
+  const filteredModels = useMemo(() => {
+    return searchQuery ? fuse.search(searchQuery).map(r => r.item) : models;
+  }, [searchQuery, fuse, models]);
+
+  // Group models by category
+  const groupedModels = useMemo(() => ({
+    popular: filteredModels.filter(m => ['gpt-4', 'claude-3.5', 'llama-3.3'].includes(m.id)),
+    bySize: filteredModels.sort((a, b) => a.parameterCount - b.parameterCount),
+  }), [filteredModels]);
+
+  const ModelRow = ({ index, style }: { index: number; style: React.CSSProperties }) => {
+    const model = filteredModels[index];
+    const isSelected = selectedModels.includes(model.id);
+
+    return (
+      <div
+        style={style}
+        className={`px-2 py-2 border-l-2 cursor-pointer hover:bg-gray-100 ${
+          isSelected ? 'border-l-blue-500 bg-blue-50' : 'border-l-transparent'
+        }`}
+        onClick={() => onSelectModel(model.id)}
+        onDoubleClick={() => onAddToChart(model.id)}
+      >
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium">{model.name}</span>
+          <span className="text-xs text-gray-400">{model.creator}</span>
+        </div>
+        {model.benchmarks.mmlu_pro && (
+          <div className="text-xs text-gray-600">
+            MMLU-Pro: {(model.benchmarks.mmlu_pro.score * 100).toFixed(1)}%
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  if (collapsed) {
+    return <div className="w-16 bg-gray-900 text-white flex flex-col items-center py-4">≡</div>;
+  }
+
+  return (
+    <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-screen">
+      {/* Header */}
+      <div className="p-4 border-b border-gray-200">
+        <input
+          type="text"
+          placeholder="Search models..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+        />
+      </div>
+
+      {/* Model List */}
+      <div className="flex-1 overflow-y-auto">
+        <List
+          height={window.innerHeight - 100}
+          itemCount={filteredModels.length}
+          itemSize={80}
+          width="100%"
+        >
+          {ModelRow}
+        </List>
+      </div>
+    </div>
+  );
+}
+```
+
+**Tasks with Prompts:**
+```
+1. "Build React component LeftSidebar with:
+   - Search input that filters models real-time
+   - Collapsible sections: Popular, By Size, By Cost
+   - Model entry shows: name, creator, MMLU-Pro score
+   - Click to select (highlight), Double-click to add to chart
+   - Favorites star icon that toggles localStorage"
+
+2. "Implement fuzzy search using fuse.js on model name + creator.
+   Threshold 0.3 for typo tolerance. Update results as user types.
+   Clear search results when user clears input."
+
+3. "Add virtualization (react-window) to render only visible items.
+   Sidebar height = window.innerHeight - 100. Item height = 80px.
+   Test with 100+ models, measure scroll performance."
+```
+
+**Prerequisites:**
+- Model data loaded from DB (Week 1)
+- React component structure ready
+- Tailwind CSS configured
+
+**Success Criteria:**
+- ✓ Sidebar renders 50+ models smoothly
+- ✓ Search works with fuzzy matching (fuse.js)
+- ✓ Click to select, double-click to add to chart
+- ✓ Favorites persist in localStorage
+
+---
+
+#### Week 3: Multi-Model Chart & Provider Selector
+**Deliverables:**
+- [ ] Recharts multi-series line chart component
+- [ ] Benchmark selector dropdown
+- [ ] Time range selector (1M, 3M, 6M, YTD, ALL)
+- [ ] Provider selector per model (if model on multiple providers)
+- [ ] Legend with color coding
+- [ ] Hover tooltips with detailed info
+
+**Code Implementation Example (React + Recharts):**
+```typescript
+// components/MultiModelChart.tsx
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Model } from '@/types';
+
+interface MultiModelChartProps {
+  selectedModels: Model[];
+  selectedBenchmark: string;
+  timeframe: '1M' | '3M' | '6M' | 'YTD' | 'ALL';
+}
+
+export function MultiModelChart({ selectedModels, selectedBenchmark, timeframe }: MultiModelChartProps) {
+  const [chartData, setChartData] = useState<any[]>([]);
+
+  useEffect(() => {
+    // Fetch benchmark data for selected models
+    fetchBenchmarkData(selectedModels.map(m => m.id), selectedBenchmark, timeframe)
+      .then(data => {
+        // Transform: [{ date, model1Score, model2Score, ... }]
+        setChartData(data);
+      });
+  }, [selectedModels, selectedBenchmark, timeframe]);
+
+  const COLORS = ['#0088FE', '#FF8042', '#00C49F', '#FFBB28', '#FF7300'];
+
+  return (
+    <div className="w-full h-96 bg-white p-4 rounded border border-gray-200">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="date" />
+          <YAxis label={{ value: 'Benchmark Score', angle: -90, position: 'insideLeft' }} />
+          <Tooltip formatter={(value) => (value * 100).toFixed(2) + '%'} />
+          <Legend />
+          {selectedModels.map((model, idx) => (
+            <Line
+              key={model.id}
+              type="monotone"
+              dataKey={model.id}
+              stroke={COLORS[idx % COLORS.length]}
+              isAnimationActive={true}
+              dot={false}
+              name={model.name}
+            />
+          ))}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+```
+
+**Tasks with Prompts:**
+```
+1. "Create fetchBenchmarkData function that:
+   - Accepts modelIds array, benchmarkId, timeframe
+   - Calls GET /api/v1/benchmarks/:benchmarkId/scores?modelIds=...&timeframe=...
+   - Returns array: [{ date: '2025-01-01', modelA: 0.85, modelB: 0.82 }, ...]
+   - Handles missing data (gaps), returns null for unavailable scores"
+
+2. "Build MultiModelChart using Recharts:
+   - Line chart with 1 line per selected model
+   - Y-axis: 0-100 (normalized benchmark score)
+   - X-axis: dates
+   - Colors: rotate through 5 colors, assign consistently per model
+   - Tooltip: show model name, score, date on hover"
+
+3. "Add controls above chart:
+   - Benchmark dropdown (MMLU-Pro, GPQA, IFEval, HumanEval, etc.)
+   - Time range buttons: 1M, 3M, 6M, YTD, ALL
+   - Export PNG button
+   - Export CSV button
+   All should update chart without page reload"
+```
+
+**Prerequisites:**
+- API endpoint working (Week 1)
+- Left sidebar with model selection (Week 2)
+- Recharts library installed
+
+**Success Criteria:**
+- ✓ 2-5 models overlay smoothly on chart
+- ✓ Benchmark/timeframe changes update chart immediately
+- ✓ Tooltips show correct data
+- ✓ Legend shows all models with colors
+- ✓ Export PNG/CSV functional
+
+---
+
+### Phase 2: Provider Features (Weeks 4-6) — 3 weeks
+**Focus:** Provider registry, pricing comparison, latency stratification
+
+#### Week 4: Provider Tab & Comparison View
+**Deliverables:**
+- [ ] New "Providers" tab in main content area
+- [ ] Provider table: name, models, pricing, latency, status
+- [ ] Filtering: by model, by region, by price range
+- [ ] Sorting: by latency, price, uptime
+- [ ] Real-time status API (WebSocket optional)
+
+**Code Outline:**
+```typescript
+// components/ProvidersTab.tsx
+interface ProviderEndpoint {
+  modelId: string;
+  modelName: string;
+  pricing: { input: number; output: number; blended: number };
+  latency: { ttft_ms: number; output_tokens_per_sec: number };
+  region: string;
+}
+
+export function ProvidersTab() {
+  const [providers, setProviders] = useState<Provider[]>([]);
+  const [filterModel, setFilterModel] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/v1/providers').then(r => r.json()).then(setProviders);
+  }, []);
+
+  const filtered = filterModel
+    ? providers.filter(p => p.endpoints.some(e => e.modelId === filterModel))
+    : providers;
+
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-4">LLM Providers</h2>
+      
+      {/* Filters */}
+      <div className="mb-4 flex gap-4">
+        <select value={filterModel || ''} onChange={(e) => setFilterModel(e.target.value || null)}>
+          <option value="">All Models</option>
+          {/* Model options */}
+        </select>
+      </div>
+
+      {/* Provider Table */}
+      <table className="w-full border-collapse">
+        <thead>
+          <tr className="bg-gray-100">
+            <th className="border p-2">Provider</th>
+            <th className="border p-2">Status</th>
+            <th className="border p-2">Models</th>
+            <th className="border p-2">Pricing (Input/Output)</th>
+            <th className="border p-2">TTFT (ms)</th>
+            <th className="border p-2">Output Speed (tok/s)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filtered.map(provider => (
+            <tr key={provider.id} className="hover:bg-gray-50">
+              <td className="border p-2 font-semibold">{provider.name}</td>
+              <td className="border p-2">
+                <span className={`px-2 py-1 rounded text-xs font-bold ${
+                  provider.status === 'operational' ? 'bg-green-100 text-green-800' :
+                  provider.status === 'degraded' ? 'bg-yellow-100 text-yellow-800' :
+                  'bg-red-100 text-red-800'
+                }`}>
+                  {provider.status}
+                </span>
+              </td>
+              <td className="border p-2">{provider.endpoints.length} models</td>
+              <td className="border p-2 text-sm">
+                {provider.endpoints.slice(0, 2).map(ep => (
+                  <div key={ep.modelId}>
+                    {ep.modelName}: ${ep.pricing.input}/${ep.pricing.output}
+                  </div>
+                ))}
+              </td>
+              <td className="border p-2 text-sm">
+                {provider.endpoints[0]?.latency.ttft_ms ?? 'N/A'}
+              </td>
+              <td className="border p-2 text-sm">
+                {provider.endpoints[0]?.latency.output_tokens_per_sec.toFixed(2)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+```
+
+**Tasks:**
+```
+1. "Build Providers tab with full table showing:
+   Provider name, status pill (green/yellow/red), count of models,
+   example pricing (first endpoint), latency (TTFT ms, tokens/sec).
+   Make rows clickable to expand and show all endpoints."
+
+2. "Implement filtering:
+   - Filter by model: show only providers that offer this model
+   - Filter by region: show only providers in specific geography
+   - Filter by price: show only providers < $X per 1M tokens
+   
+   Update table instantly on filter change."
+
+3. "Add real-time status updates:
+   Every 30 seconds, fetch /api/v1/providers/:id/status
+   Update status pill color if provider status changed.
+   Show toast notification if provider goes down/up."
+```
+
+**Success Criteria:**
+- ✓ All providers + endpoints load and display
+- ✓ Filtering works on model, region, price
+- ✓ Status indicators update
+- ✓ Pricing shown clearly
+
+---
+
+#### Week 5: Provider-Specific Latency in Chart
+**Deliverables:**
+- [ ] Modify MultiModelChart to support provider selection per model
+- [ ] Show different line styles/colors for same model on different providers
+- [ ] Provider selector dropdown per model in chart legend
+- [ ] Update latency data on provider switch
+- [ ] Latency comparison tooltip
+
+**Tasks:**
+```
+1. "When user selects model in left sidebar, check if available on multiple providers.
+   If yes, show provider selector in chart legend: 'GPT-4 [OpenAI ▼ | Azure | TogetherAI]'
+   Changing provider updates the line color/style and refreshes latency metrics."
+
+2. "Modify chart legend to show:
+   Model name | Provider | TTFT (ms) | Output Speed (tok/s)
+   
+   Make provider part clickable dropdown to switch providers without leaving chart."
+
+3. "Add latency metrics to tooltip:
+   On hover: 'GPT-4 via OpenAI | Score: 85.2 | TTFT: 450ms | Speed: 3.2 tok/s'"
+```
+
+**Success Criteria:**
+- ✓ Multi-provider models show provider selector
+- ✓ Switching provider updates chart instantly
+- ✓ Latency metrics display correctly
+- ✓ No chart reload on provider switch
+
+---
+
+#### Week 6: Cost Calculator UI & Routing Advisor
+**Deliverables:**
+- [ ] New "Cost Analysis" tab or modal
+- [ ] Workload input form (query volume, distribution, token sizes)
+- [ ] Cost projection table (monthly cost per model)
+- [ ] Smart routing recommendation
+- [ ] "Apply Config" export
+
+**Code Outline:**
+```typescript
+// components/CostCalculator.tsx
+export function CostCalculator() {
+  const [workload, setWorkload] = useState({
+    monthlyQueries: 100000,
+    avgInputTokens: 150,
+    avgOutputTokens: 500,
+    queryTypes: {
+      simpleQA: 0.4,
+      codegen: 0.3,
+      reasoning: 0.3,
+    },
+  });
+
+  const [projections, setProjections] = useState<any>(null);
+
+  const calculateCosts = async () => {
+    const res = await fetch('/api/v1/cost-analysis', {
+      method: 'POST',
+      body: JSON.stringify(workload),
+    });
+    setProjections(await res.json());
+  };
+
+  return (
+    <div className="p-6 max-w-4xl">
+      <h2 className="text-2xl font-bold mb-4">Cost Intelligence Calculator</h2>
+      
+      {/* Input Form */}
+      <div className="bg-gray-50 p-4 rounded mb-6">
+        <label>Monthly Queries: 
+          <input 
+            type="number" 
+            value={workload.monthlyQueries}
+            onChange={(e) => setWorkload({...workload, monthlyQueries: +e.target.value})}
+            className="ml-2 px-2 py-1 border rounded"
+          />
+        </label>
+        {/* More inputs... */}
+      </div>
+
+      <button onClick={calculateCosts} className="bg-blue-600 text-white px-6 py-2 rounded">
+        Calculate Projections
+      </button>
+
+      {/* Results Table */}
+      {projections && (
+        <table className="w-full mt-6 border-collapse">
+          <thead>
+            <tr className="bg-blue-100">
+              <th className="border p-2">Model</th>
+              <th className="border p-2">Monthly Cost</th>
+              <th className="border p-2">Cost/1M Tokens</th>
+              <th className="border p-2">Cost/Query</th>
+              <th className="border p-2">vs Best</th>
+            </tr>
+          </thead>
+          <tbody>
+            {projections.models.map((m: any) => (
+              <tr key={m.modelId} className="hover:bg-gray-50">
+                <td className="border p-2">{m.modelName}</td>
+                <td className="border p-2 font-semibold">${m.monthlyCost.toFixed(0)}</td>
+                <td className="border p-2">${m.costPer1MTokens.toFixed(2)}</td>
+                <td className="border p-2">${m.costPerQuery.toFixed(4)}</td>
+                <td className="border p-2">{m.savingsVsWorst}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      {projections?.recommendation && (
+        <div className="mt-6 bg-green-50 p-4 rounded border border-green-200">
+          <h3 className="font-bold text-green-800">Recommended Routing Strategy</h3>
+          <p>{projections.recommendation.description}</p>
+          <p className="mt-2 text-sm">
+            Projected Savings: <span className="font-bold text-green-700">
+              ${projections.recommendation.savings.toFixed(0)}/month
+            </span>
+          </p>
+          <button className="mt-4 bg-green-600 text-white px-4 py-2 rounded">
+            Export Routing Config
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+**Tasks:**
+```
+1. "Build POST /api/v1/cost-analysis endpoint that:
+   - Accepts: monthlyQueries, avgInputTokens, avgOutputTokens
+   - For each model, calculates: monthlyQueries * avgInputTokens * inputPrice/1M + ...
+   - Returns: array of {modelId, modelName, monthlyCost, costPer1MTokens, costPerQuery}
+   - Ranks by cost, returns best/worst performers"
+
+2. "Implement smart routing algorithm:
+   - If workload has 60% simple + 40% reasoning:
+   - Route 70% simple queries to Claude (cheaper) → $X/month
+   - Route 30% reasoning to GPT-4 (better) → $Y/month
+   - Total cost = $X + $Y, show savings vs single-model approach"
+
+3. "Add export functionality:
+   'Export Routing Config' generates JSON/YAML:
+   {
+     'simple-qa': { model: 'claude-3.5-sonnet', provider: 'anthropic', percent: 0.7 },
+     'reasoning': { model: 'gpt-4', provider: 'openai', percent: 0.3 }
+   }"
+```
+
+**Success Criteria:**
+- ✓ Cost calculator loads and accepts inputs
+- ✓ Projections calculate correctly
+- ✓ Routing recommendations generate
+- ✓ Export config works
+
+---
+
+### Phase 3: Advanced Analytics (Weeks 7-10) — 4 weeks
+**Focus:** Heatmaps, screener, additional tools
+
+#### Week 7-8: Benchmark Heatmap & Performance Matrix
+
+**Deliverable:** New visualization tab showing all models × benchmarks in heatmap format
+
+```typescript
+// components/BenchmarkHeatmap.tsx
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+
+export function BenchmarkHeatmap() {
+  const [heatmapData, setHeatmapData] = useState<any[]>([]);
+  const [selectedModels, setSelectedModels] = useState<string[]>([]);
+  const [selectedBenchmarks, setSelectedBenchmarks] = useState<string[]>([
+    'mmlu_pro', 'gpqa', 'ifeval', 'humaneval'
+  ]);
+
+  useEffect(() => {
+    fetch(
+      `/api/v1/benchmarks/heatmap?modelIds=${selectedModels.join(',')}&benchmarkIds=${selectedBenchmarks.join(',')}`
+    )
+      .then(r => r.json())
+      .then(setHeatmapData);
+  }, [selectedModels, selectedBenchmarks]);
+
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-4">Benchmark Performance Heatmap</h2>
+
+      {/* Grid: Models × Benchmarks */}
+      <div className="overflow-x-auto">
+        <table className="border-collapse">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="border p-2">Model</th>
+              {selectedBenchmarks.map(b => (
+                <th key={b} className="border p-2 text-sm">{b.toUpperCase()}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {heatmapData.map(row => (
+              <tr key={row.modelId} className="hover:bg-gray-50">
+                <td className="border p-2 font-semibold">{row.modelName}</td>
+                {selectedBenchmarks.map(b => {
+                  const score = row.benchmarks[b];
+                  const color = score >= 0.85 ? 'bg-green-100' : 
+                               score >= 0.70 ? 'bg-yellow-100' : 'bg-red-100';
+                  return (
+                    <td key={b} className={`border p-2 text-center ${color}`}>
+                      {(score * 100).toFixed(1)}%
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+```
+
+**Tasks:**
+```
+1. "Build heatmap grid: rows = selected models, columns = benchmarks
+   Color cells: green (>85%), yellow (70-85%), red (<70%)
+   Cell value: exact score (85.2%)
+   
+   Default: show all benchmarks for top 10 models by popularity"
+
+2. "Add selection controls:
+   - Benchmark toggle buttons (MMLU-Pro, GPQA, IFEval, HumanEval, etc.)
+   - Model selector (search/filter to add models)
+   - Sort: by average score, by specific benchmark, by name"
+
+3. "Implement sorting:
+   Click column header to sort all rows by that benchmark score.
+   Click row header to sort columns (benchmarks) by that model's scores."
+```
+
+---
+
+#### Week 9: Advanced Filtering & Screener
+
+**Deliverable:** New "Screener" section with multi-criteria filtering
+
+```typescript
+// components/ModelScreener.tsx
+export function ModelScreener() {
+  const [filters, setFilters] = useState({
+    costMax: 10,
+    latencyMax: 200,
+    minMMluScore: 80,
+    isOpenSource: false,
+    hasReasoning: false,
+  });
+
+  const [results, setResults] = useState<Model[]>([]);
+
+  const applyFilters = async () => {
+    const res = await fetch(`/api/v1/models/screen`, {
+      method: 'POST',
+      body: JSON.stringify(filters),
+    });
+    setResults(await res.json());
+  };
+
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-4">Model Screener</h2>
+
+      <div className="grid grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 rounded">
+        <label>
+          Max Cost ($/1M tokens):
+          <input 
+            type="range" 
+            min="0" 
+            max="50"
+            value={filters.costMax}
+            onChange={(e) => setFilters({...filters, costMax: +e.target.value})}
+          />
+          <span className="ml-2">${filters.costMax}</span>
+        </label>
+
+        <label>
+          Max Latency (ms):
+          <input 
+            type="range"
+            min="0"
+            max="1000"
+            value={filters.latencyMax}
+            onChange={(e) => setFilters({...filters, latencyMax: +e.target.value})}
+          />
+          <span className="ml-2">{filters.latencyMax}ms</span>
+        </label>
+
+        <label>
+          Min MMLU-Pro Score (%):
+          <input 
+            type="range"
+            min="0"
+            max="100"
+            value={filters.minMMluScore}
+            onChange={(e) => setFilters({...filters, minMMluScore: +e.target.value})}
+          />
+          <span className="ml-2">{filters.minMMluScore}%</span>
+        </label>
+
+        <label className="flex items-center">
+          <input 
+            type="checkbox"
+            checked={filters.isOpenSource}
+            onChange={(e) => setFilters({...filters, isOpenSource: e.target.checked})}
+          />
+          <span className="ml-2">Open Source Only</span>
+        </label>
+
+        <label className="flex items-center">
+          <input 
+            type="checkbox"
+            checked={filters.hasReasoning}
+            onChange={(e) => setFilters({...filters, hasReasoning: e.target.checked})}
+          />
+          <span className="ml-2">Has Reasoning</span>
+        </label>
+      </div>
+
+      <button onClick={applyFilters} className="bg-blue-600 text-white px-6 py-2 rounded">
+        Apply Filters
+      </button>
+
+      <div className="mt-6">
+        <h3 className="font-bold mb-2">{results.length} models match your criteria</h3>
+        <div className="grid grid-cols-2 gap-4">
+          {results.map(model => (
+            <div key={model.id} className="border rounded p-4 hover:shadow-lg">
+              <h4 className="font-semibold">{model.name}</h4>
+              <p className="text-sm text-gray-600">{model.creator}</p>
+              <div className="mt-2 text-sm">
+                <div>Cost: ${(model.costPer1MTokens || 0).toFixed(2)}</div>
+                <div>MMLU-Pro: {(model.benchmarks.mmlu_pro?.score * 100).toFixed(1)}%</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+**Tasks:**
+```
+1. "Build POST /api/v1/models/screen endpoint accepting:
+   { costMax, latencyMax, minMMluScore, isOpenSource, hasReasoning, ... }
+   Return: array of models matching all criteria, sorted by score descending"
+
+2. "Create UI with range sliders for cost, latency, benchmark score
+   Checkboxes for: open-source, reasoning, multimodal
+   Results grid showing matching models with quick metrics"
+
+3. "Add 'Save Filter' feature:
+   Let users name filters (e.g., 'Budget AWS Inference')
+   Store in localStorage + DB
+   Show saved filters as quick buttons"
+```
+
+---
+
+#### Week 10: Alerts & Monitoring
+
+**Deliverable:** User can set alerts for model performance changes, price changes, provider status
+
+```typescript
+// components/AlertManager.tsx
+export function AlertManager() {
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+
+  const createAlert = async (config: {
+    modelId: string;
+    triggerType: 'benchmark_drop' | 'price_increase' | 'provider_down';
+    threshold: number;
+  }) => {
+    const res = await fetch('/api/v1/alerts', {
+      method: 'POST',
+      body: JSON.stringify(config),
+    });
+    const newAlert = await res.json();
+    setAlerts([...alerts, newAlert]);
+  };
+
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-4">Model & Provider Alerts</h2>
+
+      <button onClick={() => {/* show create form */}} className="bg-blue-600 text-white px-4 py-2 rounded mb-4">
+        Create Alert
+      </button>
+
+      <div className="space-y-4">
+        {alerts.map(alert => (
+          <div key={alert.id} className="border rounded p-4">
+            <h4 className="font-semibold">{alert.modelName} - {alert.triggerType}</h4>
+            <p className="text-sm text-gray-600">Trigger: {alert.threshold}</p>
+            <p className="text-xs text-gray-400">Created: {new Date(alert.createdAt).toLocaleDateString()}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+## Part 5: Suggested Tools & Features (Future Roadmap)
+
+### Must-Have Tools:
+1. **Memory Calculator** — Input model size + token length, output VRAM needed, inference time, cost
+2. **Smart Query Router** — Given workload spec, recommend optimal model + provider combo
+3. **API Rate Limit Simulator** — Input QPS, model, get estimated cost + latency
+4. **Fine-tuning ROI Calculator** — Compare: fine-tune model A vs use larger model B (cost/accuracy)
+5. **Context Window Optimizer** — Given task, recommend models with sufficient context + lowest cost
+
+### Nice-to-Have Tools:
+6. **Deployment Cost Estimator** — Self-hosted vs API: compare TCO
+7. **Token Counter** — Paste text, see exact tokens for each model's tokenizer
+8. **Benchmark Contamination Checker** — Check if model training data overlaps with benchmark
+9. **Latency Percentile Analyzer** — Show P50/P95/P99 latency distributions
+10. **Capability Matcher** — "I need: reasoning + code + 100k context" → top 5 matching models
+11. **Provider SLA Tracker** — Historical uptime, incident reports, status timeline
+12. **Model A/B Test Simulator** — Input: queries + model combos, output: statistical significance
+
+---
+
+## Part 6: Success Metrics & KPIs
+
+**Technical KPIs:**
+- Chart loads in <2 seconds (including API calls)
+- Sidebar renders 100+ models with smooth scroll
+- Multi-model overlay supports 5 models without lag
+- API endpoints respond in <500ms P95
+
+**Product KPIs:**
+- Users save 3+ views (indicating value-driven usage)
+- Cost calculator gets 50%+ weekly active user engagement
+- Provider comparison tab used by 60%+ of visitors
+- Export/share functionality used 2+ times per session
+
+**Business KPIs:**
+- Retention: 40% 7-day, 25% 30-day (industry standard for analytics tools)
+- ARPU for premium tier (advanced features) reaches $50/month
+- Customer acquisition cost via content/benchmarks
+
+---
+
+## Part 7: Implementation Checklists
+
+### Pre-Phase-1 Checklist:
+- [ ] Database schemas finalized (Models, Benchmarks, Providers)
+- [ ] API keys obtained (Artificial Analysis, Together AI, etc.)
+- [ ] Data pipeline tested (can sync 100+ models hourly)
+- [ ] UI mockups approved (sidebar, chart, tabs)
+- [ ] Design system/Tailwind configured
+- [ ] Repo structure ready (React + Express monorepo or separate)
+
+### Phase-1 Exit Criteria:
+- [ ] 100+ models + 8+ benchmarks loaded
+- [ ] Left sidebar fully functional with search
+- [ ] Multi-model chart overlays 5 models
+- [ ] All 3 weeks' tasks code-reviewed
+- [ ] E2E tests written for critical paths
+- [ ] Documentation updated
+
+### Phase-2 Exit Criteria:
+- [ ] Providers tab displays all providers + endpoints
+- [ ] Provider status real-time (30-sec refresh)
+- [ ] Cost calculator produces projections
+- [ ] Routing advisor functional
+- [ ] All export features working
+
+### Phase-3 Exit Criteria:
+- [ ] Heatmap renders correctly
+- [ ] Screener filters 50+ combinations
+- [ ] Alert system fully operational
+- [ ] All performance metrics met
+
+---
+
+## Technical Stack Recommendations
+
+**Frontend:**
+- React 18+ with TypeScript
+- Recharts (charting)
+- Tailwind CSS (styling)
+- Zustand (state management)
+- React Query (data fetching)
+- React Window (virtualization)
+- Fuse.js (fuzzy search)
+
+**Backend:**
+- Node.js + Express
+- PostgreSQL (data)
+- Redis (caching)
+- Cron jobs (data sync)
+- WebSocket (real-time status)
+
+**Deployment:**
+- Vercel (frontend)
+- Railway or Fly.io (backend)
+- Supabase (PostgreSQL + auth)
+
+---
+
+## Next Steps
+
+1. **Immediately:** Finalize data aggregation (Week 1 tasks)
+2. **This Week:** Build left sidebar + model search (Week 2 tasks)
+3. **Next Week:** Launch multi-model chart + providers tab (Week 3-4 tasks)
+4. **Month 2:** Roll out cost calculator + heatmaps
+5. **Month 3:** Advanced features (screener, alerts)
+
+**Success Definition:** Platform enables enterprises to reduce LLM spend by 20-30% through intelligent routing + cost visibility.
