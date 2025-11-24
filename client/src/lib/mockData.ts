@@ -547,7 +547,7 @@ export const AI_MARKET_NEWS: NewsItem[] = [
     description: "Google releases Gemini 2.0 Flash with 1M context window and native tool use",
     type: "release",
     modelId: "gemini-2.0-flash",
-    timestamp: "2024-12-11T10:00:00Z",
+    timestamp: "2025-11-23T10:00:00Z",
     icon: "🚀",
   },
   {
@@ -556,7 +556,7 @@ export const AI_MARKET_NEWS: NewsItem[] = [
     description: "Anthropic launches new small but powerful Claude 3.5 Haiku model",
     type: "release",
     modelId: "claude-3.5-haiku",
-    timestamp: "2024-11-15T14:30:00Z",
+    timestamp: "2025-11-21T14:30:00Z",
     icon: "🚀",
   },
   {
@@ -564,7 +564,7 @@ export const AI_MARKET_NEWS: NewsItem[] = [
     title: "OpenAI Cuts GPT-4 Pricing by 20%",
     description: "OpenAI announces significant price reductions for GPT-4 and GPT-4o",
     type: "pricing",
-    timestamp: "2024-11-20T09:15:00Z",
+    timestamp: "2025-11-20T09:15:00Z",
     icon: "💰",
   },
   {
@@ -573,7 +573,7 @@ export const AI_MARKET_NEWS: NewsItem[] = [
     description: "Meta's latest model shows strong performance improvements on key benchmarks",
     type: "benchmark",
     modelId: "llama-3.3-70b",
-    timestamp: "2024-11-10T16:45:00Z",
+    timestamp: "2025-11-10T16:45:00Z",
     icon: "📈",
   },
   {
@@ -581,7 +581,7 @@ export const AI_MARKET_NEWS: NewsItem[] = [
     title: "Groq Expands API Availability",
     description: "Groq API now available in 5 new regions with improved uptime SLA",
     type: "provider",
-    timestamp: "2024-11-18T11:20:00Z",
+    timestamp: "2025-11-18T11:20:00Z",
     icon: "🌍",
   },
 ];
@@ -595,7 +595,7 @@ export const ALERTS: Alert[] = [
     description: "GPT-4o MMLU-Pro score up 2.1% - now 88.7%",
     modelId: "gpt-4o",
     severity: "info",
-    timestamp: "2024-11-23T08:30:00Z",
+    timestamp: "2025-11-23T08:30:00Z",
   },
   {
     id: "alert-2",
@@ -604,7 +604,7 @@ export const ALERTS: Alert[] = [
     description: "Claude 3.5 Sonnet pricing increased 5% effective next month",
     modelId: "claude-3.5-sonnet",
     severity: "warning",
-    timestamp: "2024-11-22T15:45:00Z",
+    timestamp: "2025-11-22T15:45:00Z",
   },
   {
     id: "alert-3",
@@ -613,7 +613,7 @@ export const ALERTS: Alert[] = [
     description: "Gemini 2.0 Flash is now available for production use",
     modelId: "gemini-2.0-flash",
     severity: "info",
-    timestamp: "2024-12-11T10:00:00Z",
+    timestamp: "2025-11-23T09:00:00Z",
   },
   {
     id: "alert-4",
@@ -621,7 +621,7 @@ export const ALERTS: Alert[] = [
     title: "OpenAI Maintenance Window",
     description: "Scheduled maintenance on Dec 24. Brief interruptions expected",
     severity: "info",
-    timestamp: "2024-11-23T12:00:00Z",
+    timestamp: "2025-11-23T12:00:00Z",
   },
 ];
 
@@ -637,7 +637,7 @@ export const COMMUNITY_POSTS: CommunityPost[] = [
     modelId: "gpt-4o",
     upvotes: 234,
     replies: 45,
-    timestamp: "2024-11-20T14:20:00Z",
+    timestamp: "2025-11-23T14:20:00Z",
   },
   {
     id: "post-2",
@@ -648,7 +648,7 @@ export const COMMUNITY_POSTS: CommunityPost[] = [
     category: "tip",
     upvotes: 512,
     replies: 87,
-    timestamp: "2024-11-19T10:45:00Z",
+    timestamp: "2025-11-22T10:45:00Z",
   },
   {
     id: "post-3",
@@ -660,7 +660,7 @@ export const COMMUNITY_POSTS: CommunityPost[] = [
     modelId: "llama-3.3-70b",
     upvotes: 867,
     replies: 143,
-    timestamp: "2024-11-17T16:30:00Z",
+    timestamp: "2025-11-21T16:30:00Z",
   },
   {
     id: "post-4",
@@ -671,6 +671,6 @@ export const COMMUNITY_POSTS: CommunityPost[] = [
     category: "discussion",
     upvotes: 445,
     replies: 92,
-    timestamp: "2024-11-21T13:15:00Z",
+    timestamp: "2025-11-23T13:15:00Z",
   },
 ];
