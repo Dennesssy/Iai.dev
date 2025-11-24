@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bookmark, BookOpen, TrendingUp, Bell, Users, Database, Box, ChevronDown } from "lucide-react";
+import { Bookmark, BookOpen, TrendingUp, Bell, Users, Database, Box, ChevronDown, List, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -30,8 +30,8 @@ export default function RightSidebar({
   onSelectModel,
 }: RightSidebarProps) {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    providers: true,
-    models: true,
+    watchlist: true,
+    details: true,
     news: true,
     alerts: false,
     community: false,
@@ -60,26 +60,26 @@ export default function RightSidebar({
     <div className="flex flex-col h-full bg-card border-l border-border">
       {/* Header */}
       <div className="p-4 border-b border-border space-y-3">
-        <h2 className="font-bold text-lg tracking-tight">Insights</h2>
+        <h2 className="font-bold text-lg tracking-tight">Widgets</h2>
       </div>
 
       {/* Content */}
       <ScrollArea className="flex-1">
         <div className="flex flex-col">
-          {/* PROVIDERS SECTION */}
+          {/* WATCHLIST SECTION (Formerly Providers) */}
           <div className="border-b border-border/50">
-            <SectionHeader icon={Database} title="Providers" section="providers" />
-            {expandedSections.providers && (
+            <SectionHeader icon={List} title="Watchlist" section="watchlist" />
+            {expandedSections.watchlist && (
               <div className="bg-secondary/10 p-0">
                  <ProviderRegistry selectedModelIds={selectedModel ? [selectedModel] : []} />
               </div>
             )}
           </div>
 
-          {/* MODELS SECTION */}
+          {/* DETAILS SECTION (Formerly Models) */}
           <div className="border-b border-border/50">
-            <SectionHeader icon={Box} title="Models" section="models" />
-            {expandedSections.models && (
+            <SectionHeader icon={Info} title="Details" section="details" />
+            {expandedSections.details && (
               <div className="bg-secondary/10 p-4">
                 <label className="text-xs font-medium text-muted-foreground mb-2 block">Select Model</label>
                 <Select value={selectedModel} onValueChange={onSelectModel}>

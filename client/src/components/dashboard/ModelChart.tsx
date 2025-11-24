@@ -9,7 +9,8 @@ import {
   Tooltip, 
   XAxis, 
   YAxis,
-  Legend
+  Legend,
+  Brush
 } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,7 +30,13 @@ import {
   Activity,
   MoreHorizontal,
   Share2,
-  Download
+  Download,
+  MousePointer2,
+  Crosshair,
+  TrendingUp,
+  Type,
+  PenTool,
+  Ruler
 } from "lucide-react";
 import { MODELS, generateBenchmarkTimeSeries } from "@/lib/mockData";
 import BubbleChart from "./BubbleChart";
@@ -52,6 +59,7 @@ export default function ModelChart({ selectedModels = ["gpt-4o"], onModelRemove,
   const [timeRange, setTimeRange] = useState("1M");
   const [benchmark, setBenchmark] = useState("mmlu-pro");
   const [chartType, setChartType] = useState<"line" | "bubble" | "candle" | "bar">("bubble");
+  const [activeTool, setActiveTool] = useState<string>("cursor");
 
   // Generate chart data with selected models
   const generateChartData = () => {
@@ -75,8 +83,32 @@ export default function ModelChart({ selectedModels = ["gpt-4o"], onModelRemove,
     return <SyncComparisonCharts />;
   }
 
+  const DrawingTools = () => (
+    <div className="absolute left-3 top-16 bottom-16 w-10 flex flex-col gap-2 bg-card border border-border rounded-md shadow-sm z-10 py-2 items-center">
+      {[
+        { id: "cursor", icon: MousePointer2, label: "Cursor" },
+        { id: "crosshair", icon: Crosshair, label: "Crosshair" },
+        { id: "trend", icon: TrendingUp, label: "Trend Line" },
+        { id: "brush", icon: PenTool, label: "Brush" },
+        { id: "text", icon: Type, label: "Text" },
+        { id: "measure", icon: Ruler, label: "Measure" },
+      ].map((tool) => (
+        <Button
+          key={tool.id}
+          variant={activeTool === tool.id ? "secondary" : "ghost"}
+          size="icon"
+          className={`h-8 w-8 ${activeTool === tool.id ? "text-primary bg-primary/10" : "text-muted-foreground"}`}
+          onClick={() => setActiveTool(tool.id)}
+          title={tool.label}
+        >
+          <tool.icon className="h-4 w-4" />
+        </Button>
+      ))}
+    </div>
+  );
+
   return (
-    <div className="flex flex-col h-full bg-card">
+    <div className="flex flex-col h-full bg-card relative">
       {/* TradingView-style Toolbar */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-border gap-2 bg-card">
         {/* Left Group: Symbol, Timeframe, Chart Type */}
@@ -163,6 +195,11 @@ export default function ModelChart({ selectedModels = ["gpt-4o"], onModelRemove,
             <Save className="h-4 w-4" />
           </Button>
 
+          <Button variant="ghost" className="h-8 px-3 text-xs font-medium text-white bg-primary hover:bg-primary/90 ml-2 gap-2">
+            <Share2 className="h-3.5 w-3.5" />
+            Share
+          </Button>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
@@ -174,7 +211,7 @@ export default function ModelChart({ selectedModels = ["gpt-4o"], onModelRemove,
                 <Download className="h-4 w-4 mr-2" /> Save Image
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Share2 className="h-4 w-4 mr-2" /> Share Link
+                <Share2 className="h-4 w-4 mr-2" /> Copy Link
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -211,8 +248,11 @@ export default function ModelChart({ selectedModels = ["gpt-4o"], onModelRemove,
         </div>
       )}
 
+      {/* Drawing Tools Sidebar */}
+      <DrawingTools />
+
       {/* Chart Content */}
-      <div className="flex-1 relative min-h-0 p-2">
+      <div className="flex-1 relative min-h-0 p-2 pl-14">
         {chartType === "bubble" ? (
           <BubbleChart benchmark={benchmark} />
         ) : (
@@ -264,8 +304,16 @@ export default function ModelChart({ selectedModels = ["gpt-4o"], onModelRemove,
                 labelStyle={{ color: 'hsl(var(--foreground))' }}
                 formatter={(value) => typeof value === 'number' ? value.toFixed(1) : value}
               />
-              {/* <Legend wrapperStyle={{ paddingTop: '16px' }} /> */}
               
+              {/* Zoom Brush */}
+              <Brush 
+                dataKey="time" 
+                height={30} 
+                stroke="hsl(var(--primary))"
+                fill="hsl(var(--background))"
+                tickFormatter={() => ""}
+              />
+
               {/* Render lines/areas for each model */}
               {selectedModels.map((modelId) => {
                 const model = MODELS[modelId];
