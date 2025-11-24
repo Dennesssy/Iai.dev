@@ -36,11 +36,13 @@ import {
   TrendingUp,
   Type,
   PenTool,
-  Ruler
+  Ruler,
+  ChevronRight
 } from "lucide-react";
 import { MODELS, generateBenchmarkTimeSeries } from "@/lib/mockData";
 import BubbleChart from "./BubbleChart";
 import SyncComparisonCharts from "./SyncComparisonCharts";
+import LiveFeed from "./LiveFeed";
 import { Separator } from "@/components/ui/separator";
 import {
   DropdownMenu,
@@ -109,10 +111,12 @@ export default function ModelChart({ selectedModels = ["gpt-4o"], onModelRemove,
 
   return (
     <div className="flex flex-col h-full bg-card relative">
-      {/* TradingView-style Toolbar */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-border gap-2 bg-card">
-        {/* Left Group: Symbol, Timeframe, Chart Type */}
-        <div className="flex items-center gap-3 flex-1 overflow-x-auto no-scrollbar">
+      {/* Top Row: Toolbar + Live Feed */}
+      <div className="flex gap-3 h-36 border-b border-border bg-gradient-to-b from-white/50 to-white/20 p-3">
+        {/* TradingView-style Toolbar - Left Side */}
+        <div className="flex-1 flex flex-col gap-2 min-w-0">
+          {/* Toolbar Controls */}
+          <div className="flex items-center gap-3 flex-wrap overflow-x-auto no-scrollbar">
           
           {/* Symbol / Benchmark Selector */}
           <div className="flex items-center gap-2 min-w-fit">
@@ -174,51 +178,56 @@ export default function ModelChart({ selectedModels = ["gpt-4o"], onModelRemove,
             <Activity className="h-4 w-4" />
             <span className="hidden sm:inline">Indicators</span>
           </Button>
-        </div>
 
-        {/* Right Group: Zoom, Save, Settings */}
-        <div className="flex items-center gap-1">
-          <div className="flex items-center bg-secondary/30 rounded-md p-0.5 mr-2">
-            <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground">
-              <ZoomOut className="h-3.5 w-3.5" />
+          {/* Right Group: Zoom, Save, Settings */}
+          <div className="flex items-center gap-1 flex-wrap">
+            <div className="flex items-center bg-secondary/30 rounded-md p-0.5">
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground">
+                <ZoomOut className="h-3.5 w-3.5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground">
+                <ZoomIn className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" title="Filter">
+              <Filter className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground">
-              <ZoomIn className="h-3.5 w-3.5" />
+            
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" title="Save Chart">
+              <Save className="h-4 w-4" />
+            </Button>
+
+            <Button variant="ghost" className="h-7 px-2 text-xs font-medium text-white bg-primary hover:bg-primary/90 gap-1">
+              <Share2 className="h-3 w-3" />
+              Share
+            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground">
+                  <Camera className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>
+                  <Download className="h-4 w-4 mr-2" /> Save Image
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Share2 className="h-4 w-4 mr-2" /> Copy Link
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground">
+              <Maximize2 className="h-4 w-4" />
             </Button>
           </div>
+        </div>
 
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" title="Filter">
-            <Filter className="h-4 w-4" />
-          </Button>
-          
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" title="Save Chart">
-            <Save className="h-4 w-4" />
-          </Button>
-
-          <Button variant="ghost" className="h-8 px-3 text-xs font-medium text-white bg-primary hover:bg-primary/90 ml-2 gap-2">
-            <Share2 className="h-3.5 w-3.5" />
-            Share
-          </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-                <Camera className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <Download className="h-4 w-4 mr-2" /> Save Image
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Share2 className="h-4 w-4 mr-2" /> Copy Link
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-            <Maximize2 className="h-4 w-4" />
-          </Button>
+        {/* Live Feed - Right Side */}
+        <div className="w-64 shrink-0">
+          <LiveFeed />
         </div>
       </div>
 

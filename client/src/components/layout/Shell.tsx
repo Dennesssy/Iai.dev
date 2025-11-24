@@ -24,11 +24,11 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
 
   const navItems = [
-    { label: "Charts", path: "/", icon: LineChart },
-    { label: "Compare", path: "/comparison", icon: LayoutGrid },
-    { label: "Community", path: "/community", icon: MessageSquare },
-    { label: "Models", path: "/models", icon: Database },
-    { label: "Playground", path: "/playground", icon: Terminal },
+    { label: "Charts", path: "/", icon: LineChart, badge: null },
+    { label: "Compare", path: "/comparison", icon: LayoutGrid, badge: "LIVE" },
+    { label: "Community", path: "/community", icon: MessageSquare, badge: null },
+    { label: "Models", path: "/models", icon: Database, badge: null },
+    { label: "Playground", path: "/playground", icon: Terminal, badge: null },
   ];
 
   return (
@@ -48,14 +48,14 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                   <span className="font-bold text-lg tracking-tight">iAi.dev</span>
                 </div>
                 <nav className="flex-1 p-4 space-y-2">
-                  {navItems.map(({ label, path, icon: Icon }) => (
+                  {navItems.map(({ label, path, icon: Icon, badge }) => (
                     <button
                       key={path}
                       onClick={() => {
                         setLocation(path);
                         setIsMobileMenuOpen(false);
                       }}
-                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-md transition-colors relative ${
                         location === path
                           ? "bg-primary/10 text-primary"
                           : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -63,6 +63,11 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                     >
                       <Icon className="h-5 w-5" />
                       <span className="font-medium">{label}</span>
+                      {badge && (
+                        <span className="ml-auto text-xs font-bold px-1.5 py-0.5 bg-red-500 text-white rounded">
+                          {badge}
+                        </span>
+                      )}
                     </button>
                   ))}
                 </nav>
@@ -79,17 +84,22 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           </button>
 
           <nav className="hidden md:flex items-center gap-1 ml-4">
-            {navItems.map(({ label, path }) => (
+            {navItems.map(({ label, path, badge }) => (
               <button
                 key={path}
                 onClick={() => setLocation(path)}
-                className={`px-3 py-1 rounded-md transition-all text-sm font-medium ${
+                className={`px-3 py-1 rounded-md transition-all text-sm font-medium relative ${
                   location === path
                     ? "text-primary bg-blue-50 shadow-sm"
                     : "text-muted-foreground hover:text-foreground hover:bg-white/50"
                 }`}
               >
                 {label}
+                {badge && (
+                  <span className="absolute -top-1 -right-1 text-xs font-bold px-1 py-0 bg-red-500 text-white rounded-full">
+                    ◯
+                  </span>
+                )}
               </button>
             ))}
           </nav>
