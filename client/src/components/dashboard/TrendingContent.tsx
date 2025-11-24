@@ -1,5 +1,6 @@
-import { ExternalLink, Youtube, BookOpen, Github, Newspaper } from "lucide-react";
+import { ExternalLink, Youtube, BookOpen, Github, Newspaper, Play, ArrowUpRight, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface TrendingItem {
   id: string;
@@ -7,316 +8,214 @@ interface TrendingItem {
   description: string;
   source: "youtube" | "arxiv" | "github" | "news";
   provider?: string;
-  image?: string;
   date: string;
   link: string;
+  size?: "small" | "medium" | "large" | "wide";
+  imageGradient?: string;
+  tags?: string[];
 }
 
 const TRENDING_CONTENT: TrendingItem[] = [
-  // YouTube
+  // Large Feature - YouTube
   {
     id: "yt1",
     title: "GPT-5.1: The Next Frontier in AI",
-    description: "Deep dive into OpenAI's latest model and its capabilities",
+    description: "Exclusive deep dive into OpenAI's latest frontier model. We analyze the reasoning capabilities, the new 2.2T parameter architecture, and what this means for the future of AGI.",
     source: "youtube",
     provider: "OpenAI",
-    date: "2 hours ago",
+    date: "2h ago",
     link: "#",
+    size: "large",
+    imageGradient: "from-green-500/20 to-emerald-900/60",
+    tags: ["Reasoning", "Frontier"]
   },
-  {
-    id: "yt2",
-    title: "Claude 3.5 Sonnet vs GPT-4o Comparison",
-    description: "Comprehensive benchmark comparison between Anthropic and OpenAI models",
-    source: "youtube",
-    provider: "AI Research Hub",
-    date: "4 hours ago",
-    link: "#",
-  },
-  {
-    id: "yt3",
-    title: "Gemini 3 Pro: Google's AI Breakthrough",
-    description: "Exploring Google's new 1M context window model",
-    source: "youtube",
-    provider: "Google AI",
-    date: "6 hours ago",
-    link: "#",
-  },
-  // arXiv
-  {
-    id: "arxiv1",
-    title: "Scaling Laws for Reasoning Models",
-    description: "New research on optimal model scaling for reasoning tasks",
-    source: "arxiv",
-    date: "3 hours ago",
-    link: "#",
-  },
-  {
-    id: "arxiv2",
-    title: "Efficient Fine-tuning of Large Language Models",
-    description: "Novel techniques for parameter-efficient adaptation",
-    source: "arxiv",
-    date: "5 hours ago",
-    link: "#",
-  },
-  {
-    id: "arxiv3",
-    title: "Mixture of Experts: The Future of LLMs",
-    description: "Analysis of MoE architectures and their performance characteristics",
-    source: "arxiv",
-    date: "8 hours ago",
-    link: "#",
-  },
-  // GitHub
-  {
-    id: "gh1",
-    title: "DeepSeek V3: Open Source Release",
-    description: "671B MoE model now available with full weights",
-    source: "github",
-    provider: "DeepSeek",
-    date: "1 day ago",
-    link: "#",
-  },
-  {
-    id: "gh2",
-    title: "Llama 4 Scout: Meta's Latest Open Model",
-    description: "10M context window open-source model",
-    source: "github",
-    provider: "Meta",
-    date: "2 days ago",
-    link: "#",
-  },
-  {
-    id: "gh3",
-    title: "Mistral Large 3: Production-Ready Release",
-    description: "Optimized for enterprise deployments",
-    source: "github",
-    provider: "Mistral AI",
-    date: "3 days ago",
-    link: "#",
-  },
-  // News
+  // Wide Feature - News
   {
     id: "news1",
-    title: "OpenAI Announces GPT-5.1 with Enhanced Reasoning",
-    description: "New model achieves 89.5% on MMLU-Pro benchmark",
-    source: "news",
-    provider: "OpenAI Blog",
-    date: "2 hours ago",
-    link: "#",
-  },
-  {
-    id: "news2",
     title: "Anthropic Releases Claude 3.5 Sonnet",
-    description: "State-of-the-art performance in long-context reasoning",
+    description: "State-of-the-art performance in long-context reasoning with a 200k context window.",
     source: "news",
     provider: "Anthropic",
-    date: "1 day ago",
+    date: "1d ago",
     link: "#",
+    size: "wide",
+    imageGradient: "from-orange-500/20 to-amber-900/60",
+    tags: ["Release", "SOTA"]
   },
+  // Medium - GitHub
   {
-    id: "news3",
-    title: "Google Expands Gemini 3 Pro Availability",
-    description: "1M token context now available to all users",
-    source: "news",
-    provider: "Google AI",
-    date: "1 day ago",
+    id: "gh1",
+    title: "DeepSeek V3 Open Source",
+    description: "671B MoE model weights now available.",
+    source: "github",
+    provider: "DeepSeek",
+    date: "1d ago",
     link: "#",
+    size: "medium",
+    imageGradient: "from-blue-500/20 to-indigo-900/60",
+    tags: ["Open Source"]
   },
+  // Small - Arxiv
+  {
+    id: "arxiv1",
+    title: "Scaling Laws for Reasoning",
+    description: "Optimal compute allocation for CoT.",
+    source: "arxiv",
+    date: "3h ago",
+    link: "#",
+    size: "small",
+    imageGradient: "from-red-500/20 to-rose-900/60",
+    tags: ["Research"]
+  },
+  // Small - News
+  {
+    id: "news2",
+    title: "Google Gemini 3 Pro",
+    description: "1M context window for all enterprise users.",
+    source: "news",
+    provider: "Google",
+    date: "5h ago",
+    link: "#",
+    size: "small",
+    imageGradient: "from-blue-400/20 to-cyan-900/60",
+    tags: ["Enterprise"]
+  },
+  // Medium - YouTube
+  {
+    id: "yt2",
+    title: "Building Agents with Replit",
+    description: "Tutorial on creating autonomous coding agents.",
+    source: "youtube",
+    provider: "Replit",
+    date: "6h ago",
+    link: "#",
+    size: "medium",
+    imageGradient: "from-orange-500/20 to-red-900/60",
+    tags: ["Dev", "Agents"]
+  },
+  // Wide - GitHub
+  {
+    id: "gh2",
+    title: "Llama 4 Scout Release",
+    description: "Meta's lightweight 8B parameter model optimized for edge devices and local inference.",
+    source: "github",
+    provider: "Meta",
+    date: "2d ago",
+    link: "#",
+    size: "wide",
+    imageGradient: "from-blue-600/20 to-blue-900/60",
+    tags: ["Local LLM"]
+  },
+  // Small - Arxiv
+  {
+    id: "arxiv2",
+    title: "MoE Architecture Analysis",
+    description: "Comparative study of sparse activation.",
+    source: "arxiv",
+    date: "8h ago",
+    link: "#",
+    size: "small",
+    imageGradient: "from-purple-500/20 to-violet-900/60",
+    tags: ["Architecture"]
+  },
+  // Small - News
   {
     id: "news4",
-    title: "Replit Launches AI Code Generation Assistant",
-    description: "New features for collaborative AI-powered development",
+    title: "Mistral Large 3",
+    description: "New European champion model.",
     source: "news",
-    provider: "Replit",
-    date: "2 days ago",
+    provider: "Mistral",
+    date: "3d ago",
     link: "#",
+    size: "small",
+    imageGradient: "from-yellow-500/20 to-amber-900/60",
+    tags: ["Europe"]
   },
 ];
 
-const getSourceIcon = (source: string) => {
-  switch (source) {
-    case "youtube":
-      return <Youtube className="h-4 w-4" />;
-    case "arxiv":
-      return <BookOpen className="h-4 w-4" />;
-    case "github":
-      return <Github className="h-4 w-4" />;
-    case "news":
-      return <Newspaper className="h-4 w-4" />;
-    default:
-      return <ExternalLink className="h-4 w-4" />;
-  }
-};
+const BentoCard = ({ item }: { item: TrendingItem }) => {
+  // Determine grid span based on size
+  const spanClasses = {
+    small: "col-span-1 row-span-1",
+    medium: "col-span-1 md:col-span-2 row-span-1", // Wide on desktop
+    wide: "col-span-1 md:col-span-2 row-span-1",
+    large: "col-span-1 md:col-span-2 row-span-2", // Big square/rect
+  };
 
-const getSourceColor = (source: string) => {
-  switch (source) {
-    case "youtube":
-      return "bg-red-100 text-red-700";
-    case "arxiv":
-      return "bg-orange-100 text-orange-700";
-    case "github":
-      return "bg-slate-100 text-slate-700";
-    case "news":
-      return "bg-blue-100 text-blue-700";
-    default:
-      return "bg-gray-100 text-gray-700";
-  }
+  const Icon = 
+    item.source === "youtube" ? Youtube :
+    item.source === "github" ? Github :
+    item.source === "arxiv" ? BookOpen : Newspaper;
+
+  return (
+    <div className={`group relative overflow-hidden rounded-xl bg-card border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg ${spanClasses[item.size || "small"]}`}>
+      {/* Background Gradient/Image Placeholder */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${item.imageGradient} opacity-30 group-hover:opacity-40 transition-opacity`} />
+      
+      {/* Content Container */}
+      <div className="relative h-full p-5 flex flex-col justify-between">
+        
+        {/* Top Row: Badge & Icon */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex gap-2">
+            <Badge variant="secondary" className="bg-background/50 backdrop-blur-md border-white/10 text-xs font-medium flex items-center gap-1.5">
+               <Icon className="h-3 w-3" />
+               {item.source === "youtube" ? "Watch" : item.source === "arxiv" ? "Paper" : item.source === "github" ? "Repo" : "News"}
+            </Badge>
+            {item.provider && (
+              <Badge variant="outline" className="bg-background/30 backdrop-blur-sm border-white/10 text-[10px]">
+                {item.provider}
+              </Badge>
+            )}
+          </div>
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-background/20 backdrop-blur-sm hover:bg-background/40 text-foreground/80 -mt-1 -mr-1">
+            <ArrowUpRight className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Main Info */}
+        <div className="space-y-2">
+          <h3 className={`font-bold text-foreground leading-tight ${item.size === 'large' ? 'text-2xl' : 'text-lg'}`}>
+            {item.title}
+          </h3>
+          <p className="text-muted-foreground text-sm line-clamp-3">
+            {item.description}
+          </p>
+        </div>
+
+        {/* Footer Info */}
+        <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground/70 font-medium">
+          <div className="flex gap-2">
+            {item.tags?.map(tag => (
+              <span key={tag}>#{tag}</span>
+            ))}
+          </div>
+          <span>{item.date}</span>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default function TrendingContent() {
-  const groupedBySource = {
-    youtube: TRENDING_CONTENT.filter(item => item.source === "youtube"),
-    arxiv: TRENDING_CONTENT.filter(item => item.source === "arxiv"),
-    github: TRENDING_CONTENT.filter(item => item.source === "github"),
-    news: TRENDING_CONTENT.filter(item => item.source === "news"),
-  };
-
   return (
-    <div className="w-full h-full flex flex-col bg-background overflow-hidden">
-      <div className="px-4 py-3 border-b border-border bg-card">
-        <h2 className="font-bold text-lg">Trending in AI</h2>
-        <p className="text-xs text-muted-foreground mt-0.5">YouTube • arXiv • GitHub • News</p>
+    <div className="w-full max-w-7xl mx-auto space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">For You</h2>
+          <p className="text-muted-foreground">Curated insights from the AI ecosystem</p>
+        </div>
+        <div className="flex gap-2">
+           <Button variant="outline" size="sm" className="h-8">Latest</Button>
+           <Button variant="ghost" size="sm" className="h-8">Trending</Button>
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        {/* YouTube Section */}
-        <div className="border-b border-border">
-          <div className="px-4 py-2 bg-secondary/5 sticky top-0 flex items-center gap-2">
-            <Youtube className="h-4 w-4 text-red-600" />
-            <h3 className="font-semibold text-sm">YouTube</h3>
-            <span className="text-xs text-muted-foreground ml-auto">{groupedBySource.youtube.length} trending</span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 p-3">
-            {groupedBySource.youtube.map(item => (
-              <a
-                key={item.id}
-                href={item.link}
-                className="group p-3 rounded-lg border border-border hover:border-primary hover:bg-secondary/50 transition-colors"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors">
-                      {item.title}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                      {item.description}
-                    </p>
-                    <div className="flex items-center justify-between gap-2 mt-2">
-                      {item.provider && (
-                        <Badge variant="outline" className="text-[10px]">{item.provider}</Badge>
-                      )}
-                      <span className="text-[10px] text-muted-foreground/60">{item.date}</span>
-                    </div>
-                  </div>
-                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary flex-shrink-0 mt-1" />
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
-
-        {/* arXiv Section */}
-        <div className="border-b border-border">
-          <div className="px-4 py-2 bg-secondary/5 sticky top-0 flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-orange-600" />
-            <h3 className="font-semibold text-sm">arXiv Research</h3>
-            <span className="text-xs text-muted-foreground ml-auto">{groupedBySource.arxiv.length} papers</span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 p-3">
-            {groupedBySource.arxiv.map(item => (
-              <a
-                key={item.id}
-                href={item.link}
-                className="group p-3 rounded-lg border border-border hover:border-primary hover:bg-secondary/50 transition-colors"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors">
-                      {item.title}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                      {item.description}
-                    </p>
-                    <span className="text-[10px] text-muted-foreground/60 mt-2 block">{item.date}</span>
-                  </div>
-                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary flex-shrink-0 mt-1" />
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
-
-        {/* GitHub Section */}
-        <div className="border-b border-border">
-          <div className="px-4 py-2 bg-secondary/5 sticky top-0 flex items-center gap-2">
-            <Github className="h-4 w-4 text-slate-700" />
-            <h3 className="font-semibold text-sm">GitHub Releases</h3>
-            <span className="text-xs text-muted-foreground ml-auto">{groupedBySource.github.length} releases</span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 p-3">
-            {groupedBySource.github.map(item => (
-              <a
-                key={item.id}
-                href={item.link}
-                className="group p-3 rounded-lg border border-border hover:border-primary hover:bg-secondary/50 transition-colors"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors">
-                      {item.title}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                      {item.description}
-                    </p>
-                    <div className="flex items-center justify-between gap-2 mt-2">
-                      {item.provider && (
-                        <Badge variant="outline" className="text-[10px]">{item.provider}</Badge>
-                      )}
-                      <span className="text-[10px] text-muted-foreground/60">{item.date}</span>
-                    </div>
-                  </div>
-                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary flex-shrink-0 mt-1" />
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
-
-        {/* News Section */}
-        <div>
-          <div className="px-4 py-2 bg-secondary/5 sticky top-0 flex items-center gap-2">
-            <Newspaper className="h-4 w-4 text-blue-600" />
-            <h3 className="font-semibold text-sm">Latest News</h3>
-            <span className="text-xs text-muted-foreground ml-auto">{groupedBySource.news.length} stories</span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 p-3">
-            {groupedBySource.news.map(item => (
-              <a
-                key={item.id}
-                href={item.link}
-                className="group p-3 rounded-lg border border-border hover:border-primary hover:bg-secondary/50 transition-colors"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors">
-                      {item.title}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                      {item.description}
-                    </p>
-                    <div className="flex items-center justify-between gap-2 mt-2">
-                      {item.provider && (
-                        <Badge variant="outline" className="text-[10px]">{item.provider}</Badge>
-                      )}
-                      <span className="text-[10px] text-muted-foreground/60">{item.date}</span>
-                    </div>
-                  </div>
-                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary flex-shrink-0 mt-1" />
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
+      {/* Mosaic Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-4 auto-rows-[200px] gap-4">
+        {TRENDING_CONTENT.map((item) => (
+          <BentoCard key={item.id} item={item} />
+        ))}
       </div>
     </div>
   );

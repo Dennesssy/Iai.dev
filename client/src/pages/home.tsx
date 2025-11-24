@@ -5,6 +5,7 @@ import {
   ResizablePanelGroup 
 } from "@/components/ui/resizable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import Shell from "@/components/layout/Shell";
 import CategorySidebar from "@/components/dashboard/CategorySidebar";
 import ModelChart from "@/components/dashboard/ModelChart";
@@ -33,31 +34,33 @@ export default function Home() {
 
   return (
     <Shell>
-      <div className="flex flex-1 w-full overflow-hidden">
-        {/* Left Sidebar - Categories with Comparison Toggle */}
-        <div className="hidden lg:block w-64 border-r border-border shrink-0">
-          <CategorySidebar 
-            comparisonMode={comparisonMode}
-            onComparisonModeChange={setComparisonMode}
-          />
-        </div>
+      {/* Main Scroll Container */}
+      <div className="h-full overflow-y-auto bg-background">
+        
+        {/* Page 1: Dashboard View (Full Height) */}
+        <div className="h-[calc(100vh-3.5rem)] min-h-[600px] flex flex-col border-b border-border/50">
+          <div className="flex-1 flex w-full overflow-hidden">
+            {/* Left Sidebar - Categories with Comparison Toggle */}
+            <div className="hidden lg:block w-64 border-r border-border shrink-0 bg-card">
+              <CategorySidebar 
+                comparisonMode={comparisonMode}
+                onComparisonModeChange={setComparisonMode}
+              />
+            </div>
 
-        {/* Main Workspace */}
-        <div className="flex-1 flex flex-col min-w-0">
-          <ResizablePanelGroup 
-            direction={isMobile ? "vertical" : "horizontal"} 
-            className="flex-1"
-          >
-            
-            {/* Center + Bottom Area */}
-            <ResizablePanel defaultSize={70} minSize={50}>
-              <ResizablePanelGroup direction="vertical">
+            {/* Main Workspace */}
+            <div className="flex-1 flex flex-col min-w-0 bg-background">
+              <ResizablePanelGroup 
+                direction={isMobile ? "vertical" : "horizontal"} 
+                className="flex-1"
+              >
                 
-                {/* Chart Area & Trending Content */}
-                <ResizablePanel defaultSize={comparisonMode ? 100 : 60} minSize={30}>
+                {/* Center + Bottom Area */}
+                <ResizablePanel defaultSize={70} minSize={50}>
                   <ResizablePanelGroup direction="vertical">
+                    
                     {/* Chart Area */}
-                    <ResizablePanel defaultSize={60} minSize={30}>
+                    <ResizablePanel defaultSize={comparisonMode ? 100 : 60} minSize={30}>
                       <ModelChart 
                         selectedModels={selectedModels} 
                         onModelRemove={handleModelRemove}
@@ -69,12 +72,24 @@ export default function Home() {
                       <>
                         <ResizableHandle withHandle />
                         
-                        {/* Trending Content */}
-                        <ResizablePanel defaultSize={40} minSize={20}>
-                          <TrendingContent />
+                        {/* Metrics / Provider Panel */}
+                        <ResizablePanel defaultSize={40} minSize={10}>
+                          <Tabs defaultValue="metrics" className="h-full flex flex-col bg-card">
+                            <TabsList className="h-10 border-b border-border bg-card rounded-none w-full justify-start px-2">
+                              <TabsTrigger value="metrics" className="text-sm">Metrics</TabsTrigger>
+                              <TabsTrigger value="providers" className="text-sm">Providers</TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="metrics" className="flex-1 overflow-hidden m-0">
+                              <MetricsPanel />
+                            </TabsContent>
+                            <TabsContent value="providers" className="flex-1 overflow-hidden m-0">
+                              <ProviderRegistry selectedModelIds={selectedModels} />
+                            </TabsContent>
+                          </Tabs>
                         </ResizablePanel>
                       </>
                     )}
+
                   </ResizablePanelGroup>
                 </ResizablePanel>
                 
@@ -82,50 +97,33 @@ export default function Home() {
                   <>
                     <ResizableHandle withHandle />
                     
-                    {/* Metrics / Provider Panel */}
-                    <ResizablePanel defaultSize={40} minSize={10}>
-                      <Tabs defaultValue="metrics" className="h-full flex flex-col">
-                        <TabsList className="h-10 border-b border-border bg-card rounded-none">
-                          <TabsTrigger value="metrics" className="text-sm">Metrics</TabsTrigger>
-                          <TabsTrigger value="providers" className="text-sm">Providers</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="metrics" className="flex-1 overflow-hidden">
-                          <MetricsPanel />
-                        </TabsContent>
-                        <TabsContent value="providers" className="flex-1 overflow-hidden">
-                          <ProviderRegistry selectedModelIds={selectedModels} />
-                        </TabsContent>
-                      </Tabs>
+                    {/* Right Sidebar */}
+                    <ResizablePanel 
+                      defaultSize={30}
+                      minSize={20}
+                      maxSize={isMobile ? 100 : 40}
+                      className={isMobile ? "min-h-[300px]" : ""}
+                    >
+                      <RightSidebar
+                        favorites={favorites}
+                        onToggleFavorite={handleToggleFavorite}
+                        selectedModel={selectedModel}
+                        onSelectModel={setSelectedModel}
+                      />
                     </ResizablePanel>
                   </>
                 )}
-
-              </ResizablePanelGroup>
-            </ResizablePanel>
-            
-            {!comparisonMode && (
-              <>
-                <ResizableHandle withHandle />
                 
-                {/* Right Sidebar */}
-                <ResizablePanel 
-                  defaultSize={30}
-                  minSize={20}
-                  maxSize={isMobile ? 100 : 40}
-                  className={isMobile ? "min-h-[300px]" : ""}
-                >
-                  <RightSidebar
-                    favorites={favorites}
-                    onToggleFavorite={handleToggleFavorite}
-                    selectedModel={selectedModel}
-                    onSelectModel={setSelectedModel}
-                  />
-                </ResizablePanel>
-              </>
-            )}
-            
-          </ResizablePanelGroup>
+              </ResizablePanelGroup>
+            </div>
+          </div>
         </div>
+
+        {/* Page 2: Trending Content (Mosaic Grid) */}
+        <div className="min-h-screen w-full bg-secondary/5 p-8">
+          <TrendingContent />
+        </div>
+
       </div>
     </Shell>
   );
