@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bookmark, BookOpen, TrendingUp, Bell, Users, Database, Box } from "lucide-react";
+import { Bookmark, BookOpen, TrendingUp, Bell, Users, Database, Box, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -14,6 +14,7 @@ import AlertsPanel from "./AlertsPanel";
 import CommunityInsights from "./CommunityInsights";
 import ProviderRegistry from "./ProviderRegistry";
 import { MODELS } from "@/lib/mockData";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface RightSidebarProps {
   favorites: string[];
@@ -22,75 +23,67 @@ interface RightSidebarProps {
   onSelectModel: (modelId: string) => void;
 }
 
-type TabValue = "providers" | "models" | "news" | "alerts" | "community";
-
 export default function RightSidebar({
   favorites,
   onToggleFavorite,
   selectedModel,
   onSelectModel,
 }: RightSidebarProps) {
-  const [activeTab, setActiveTab] = useState<TabValue>("providers");
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    providers: true,
+    models: true,
+    news: true,
+    alerts: false,
+    community: false,
+  });
 
-  const navItems: { id: TabValue; label: string; icon: React.ReactNode }[] = [
-    { id: "providers", label: "Providers", icon: <Database className="h-4 w-4" /> },
-    { id: "models", label: "Models", icon: <Box className="h-4 w-4" /> },
-    { id: "news", label: "News", icon: <TrendingUp className="h-4 w-4" /> },
-    { id: "alerts", label: "Alerts", icon: <Bell className="h-4 w-4" /> },
-    { id: "community", label: "Community", icon: <Users className="h-4 w-4" /> },
-  ];
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const SectionHeader = ({ icon: Icon, title, section }: any) => (
+    <button
+      onClick={() => toggleSection(section)}
+      className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/50 transition-colors font-semibold text-sm border-b border-border/50"
+    >
+      <div className="flex items-center gap-2">
+        <Icon className="h-4 w-4" />
+        {title}
+      </div>
+      <ChevronDown
+        className={`h-4 w-4 transition-transform ${expandedSections[section] ? '' : '-rotate-90'}`}
+      />
+    </button>
+  );
 
   return (
-    <div className="flex h-full bg-card border-l border-border">
-      {/* Left Navigation Panel */}
-      <div className="w-32 border-r border-border bg-card/50 flex flex-col">
-        {/* Header */}
-        <div className="p-3 border-b border-border">
-          <h3 className="font-bold text-xs tracking-wider text-foreground uppercase">Insights</h3>
-        </div>
-
-        {/* Navigation Items */}
-        <div className="flex-1 flex flex-col gap-1 p-2 overflow-y-auto">
-          {navItems.map((item) => (
-            <Button
-              key={item.id}
-              variant={activeTab === item.id ? "default" : "ghost"}
-              className={`w-full justify-start gap-2 h-9 text-xs font-medium ${
-                activeTab === item.id
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-              }`}
-              onClick={() => setActiveTab(item.id)}
-              title={item.label}
-            >
-              {item.icon}
-              <span className="truncate">{item.label}</span>
-            </Button>
-          ))}
-        </div>
+    <div className="flex flex-col h-full bg-card border-l border-border">
+      {/* Header */}
+      <div className="p-4 border-b border-border space-y-3">
+        <h2 className="font-bold text-lg tracking-tight">Insights</h2>
       </div>
 
-      {/* Right Content Panel */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Content Header */}
-        <div className="px-4 py-3 border-b border-border bg-card">
-          <h2 className="font-semibold text-sm">
-            {navItems.find((item) => item.id === activeTab)?.label}
-          </h2>
-        </div>
+      {/* Content */}
+      <ScrollArea className="flex-1">
+        <div className="flex flex-col">
+          {/* PROVIDERS SECTION */}
+          <div className="border-b border-border/50">
+            <SectionHeader icon={Database} title="Providers" section="providers" />
+            {expandedSections.providers && (
+              <div className="bg-secondary/10 p-0">
+                 <ProviderRegistry selectedModelIds={selectedModel ? [selectedModel] : []} />
+              </div>
+            )}
+          </div>
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-auto flex flex-col h-full">
-          {activeTab === "providers" && (
-            <ProviderRegistry selectedModelIds={selectedModel ? [selectedModel] : []} />
-          )}
-
-          {activeTab === "models" && (
-            <div className="flex flex-col h-full">
-              <div className="p-4 border-b border-border bg-card/50">
-                <label className="text-xs font-medium text-muted-foreground mb-2 block">Select Model to View Details</label>
+          {/* MODELS SECTION */}
+          <div className="border-b border-border/50">
+            <SectionHeader icon={Box} title="Models" section="models" />
+            {expandedSections.models && (
+              <div className="bg-secondary/10 p-4">
+                <label className="text-xs font-medium text-muted-foreground mb-2 block">Select Model</label>
                 <Select value={selectedModel} onValueChange={onSelectModel}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full mb-4 h-8 text-xs">
                     <SelectValue placeholder="Choose a model..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -107,27 +100,49 @@ export default function RightSidebar({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="flex-1 overflow-auto">
+                
                 {selectedModel ? (
                   <ModelDetails modelId={selectedModel} />
                 ) : (
-                  <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8 text-center">
-                    <Box className="h-8 w-8 mb-2 opacity-20" />
-                    <p className="text-sm">Select a model from the dropdown above to view its technical specifications and benchmarks.</p>
+                  <div className="text-xs text-muted-foreground text-center py-4">
+                    Select a model to view details
                   </div>
                 )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
-          {activeTab === "news" && <AiMarketNews />}
+          {/* NEWS SECTION */}
+          <div className="border-b border-border/50">
+            <SectionHeader icon={TrendingUp} title="News" section="news" />
+            {expandedSections.news && (
+              <div className="bg-secondary/10">
+                <AiMarketNews />
+              </div>
+            )}
+          </div>
 
-          {activeTab === "alerts" && <AlertsPanel />}
+          {/* ALERTS SECTION */}
+          <div className="border-b border-border/50">
+            <SectionHeader icon={Bell} title="Alerts" section="alerts" />
+            {expandedSections.alerts && (
+              <div className="bg-secondary/10">
+                <AlertsPanel />
+              </div>
+            )}
+          </div>
 
-          {activeTab === "community" && <CommunityInsights />}
+          {/* COMMUNITY SECTION */}
+          <div className="border-b border-border/50">
+            <SectionHeader icon={Users} title="Community" section="community" />
+            {expandedSections.community && (
+              <div className="bg-secondary/10">
+                <CommunityInsights />
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </ScrollArea>
     </div>
   );
 }
