@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
 import { 
   TrendingUp, 
   Zap, 
@@ -11,11 +10,11 @@ import {
   Code,
   Lightbulb,
   Users,
-  ChevronDown,
-  GraduationCap
+  ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const categories = [
   {
@@ -45,27 +44,34 @@ const categories = [
   }
 ];
 
-export default function CategorySidebar() {
+interface CategorySidebarProps {
+  comparisonMode?: boolean;
+  onComparisonModeChange?: (enabled: boolean) => void;
+}
+
+export default function CategorySidebar({ comparisonMode = false, onComparisonModeChange }: CategorySidebarProps) {
   const [expanded, setExpanded] = useState<string | null>("Performance");
-  const [location] = useLocation();
 
   return (
     <div className="flex flex-col h-full w-64 bg-card border-r border-border">
       <div className="p-4 border-b border-border space-y-3">
         <h2 className="font-bold text-lg tracking-tight">Categories</h2>
-        {/* Study Button */}
-        <Link href="/study">
-          <div className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-colors ${
-            location === '/study' 
-              ? 'bg-primary/10 border-primary/30 text-primary' 
-              : 'bg-secondary/30 border-border/50 hover:bg-secondary/40'
-          }`}>
-            <GraduationCap className="h-4 w-4" />
-            <span className="flex-1 text-xs font-semibold select-none">
-              Study Center
-            </span>
-          </div>
-        </Link>
+        {/* Comparison Mode Toggle */}
+        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-secondary/30 border border-border/50 hover:bg-secondary/40 transition-colors cursor-pointer">
+          <Checkbox
+            id="comparison-mode"
+            checked={comparisonMode}
+            onCheckedChange={(checked) => onComparisonModeChange?.(checked as boolean)}
+            className="h-4 w-4"
+            data-testid="toggle-comparison-mode"
+          />
+          <label
+            htmlFor="comparison-mode"
+            className="flex-1 text-xs font-semibold cursor-pointer select-none"
+          >
+            Comparison Mode
+          </label>
+        </div>
       </div>
 
       <ScrollArea className="flex-1">
