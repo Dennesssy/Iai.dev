@@ -8,7 +8,8 @@ import {
   LineChart, 
   MessageSquare, 
   Database, 
-  Menu 
+  Menu,
+  Terminal 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     { label: "Compare", path: "/comparison", icon: LayoutGrid },
     { label: "Community", path: "/community", icon: MessageSquare },
     { label: "Models", path: "/models", icon: Database },
+    { label: "Playground", path: "/playground", icon: Terminal },
   ];
 
   return (

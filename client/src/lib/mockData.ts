@@ -1,4 +1,32 @@
+import openaiLogo from '@assets/stock_images/minimalist_abstract__e5548587.jpg';
+import anthropicLogo from '@assets/stock_images/minimalist_abstract__5e7a0fd4.jpg';
+import googleLogo from '@assets/stock_images/minimalist_abstract__2335ffc6.jpg';
+import metaLogo from '@assets/stock_images/minimalist_abstract__2335ffc6.jpg';
+import mistralLogo from '@assets/stock_images/minimalist_abstract__927ff4b7.jpg';
+import deepseekLogo from '@assets/stock_images/minimalist_abstract__2335ffc6.jpg';
+import xaiLogo from '@assets/stock_images/minimalist_abstract__e5548587.jpg';
+import genericLogo from '@assets/stock_images/minimalist_abstract__561e9037.jpg';
+
 // Mock data for LLMView - Models, Providers, and Benchmarks
+
+export const COMPANY_LOGOS: Record<string, string> = {
+  "OpenAI": openaiLogo,
+  "Anthropic": anthropicLogo,
+  "Google": googleLogo,
+  "Meta": metaLogo,
+  "Mistral AI": mistralLogo,
+  "DeepSeek": deepseekLogo,
+  "xAI": xaiLogo,
+  "Alibaba": genericLogo,
+  "Microsoft": googleLogo,
+  "Cohere": genericLogo,
+  "MiniMax": genericLogo,
+  "KwaiPilot": genericLogo,
+  "Zhipu AI": genericLogo,
+  "AI21 Labs": genericLogo,
+  "Nous Research": genericLogo,
+  "Moonshot AI": genericLogo,
+};
 
 export interface ModelData {
   id: string;
