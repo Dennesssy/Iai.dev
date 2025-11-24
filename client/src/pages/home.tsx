@@ -1,24 +1,45 @@
+import { useState } from "react";
 import { 
   ResizableHandle, 
   ResizablePanel, 
   ResizablePanelGroup 
 } from "@/components/ui/resizable";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Shell from "@/components/layout/Shell";
-import CategorySidebar from "@/components/dashboard/CategorySidebar";
+import ModelNavigator from "@/components/dashboard/ModelNavigator";
 import ModelChart from "@/components/dashboard/ModelChart";
-import ModelList from "@/components/dashboard/ModelList";
+import ProviderRegistry from "@/components/dashboard/ProviderRegistry";
 import MetricsPanel from "@/components/dashboard/MetricsPanel";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Home() {
   const isMobile = useIsMobile();
+  const [selectedModels, setSelectedModels] = useState<string[]>(["gpt-4o"]);
+
+  const handleModelSelect = (modelId: string) => {
+    if (!selectedModels.includes(modelId)) {
+      setSelectedModels([...selectedModels, modelId]);
+    }
+  };
+
+  const handleModelDeselect = (modelId: string) => {
+    setSelectedModels(selectedModels.filter((id) => id !== modelId));
+  };
+
+  const handleModelRemove = (modelId: string) => {
+    handleModelDeselect(modelId);
+  };
 
   return (
     <Shell>
       <div className="flex flex-1 w-full overflow-hidden">
-        {/* Left Category Sidebar (Hidden on Mobile) */}
-        <div className="hidden lg:block">
-          <CategorySidebar />
+        {/* Left Sidebar - Model Navigator */}
+        <div className="hidden lg:block w-80 border-r border-border shrink-0">
+          <ModelNavigator
+            selectedModels={selectedModels}
+            onModelSelect={handleModelSelect}
+            onModelDeselect={handleModelDeselect}
+          />
         </div>
 
         {/* Main Workspace */}
@@ -34,29 +55,31 @@ export default function Home() {
                 
                 {/* Chart Area */}
                 <ResizablePanel defaultSize={60} minSize={30}>
-                  <ModelChart />
+                  <ModelChart 
+                    selectedModels={selectedModels} 
+                    onModelRemove={handleModelRemove}
+                  />
                 </ResizablePanel>
                 
                 <ResizableHandle withHandle />
                 
-                {/* Metrics / Bottom Panel */}
+                {/* Metrics / Provider Panel */}
                 <ResizablePanel defaultSize={40} minSize={10}>
-                  <MetricsPanel />
+                  <Tabs defaultValue="metrics" className="h-full flex flex-col">
+                    <TabsList className="h-10 border-b border-border bg-card rounded-none">
+                      <TabsTrigger value="metrics" className="text-sm">Metrics</TabsTrigger>
+                      <TabsTrigger value="providers" className="text-sm">Providers</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="metrics" className="flex-1 overflow-hidden">
+                      <MetricsPanel />
+                    </TabsContent>
+                    <TabsContent value="providers" className="flex-1 overflow-hidden">
+                      <ProviderRegistry selectedModelIds={selectedModels} />
+                    </TabsContent>
+                  </Tabs>
                 </ResizablePanel>
 
               </ResizablePanelGroup>
-            </ResizablePanel>
-            
-            <ResizableHandle withHandle />
-            
-            {/* Right Sidebar (Model List) */}
-            <ResizablePanel 
-              defaultSize={20} 
-              minSize={15} 
-              maxSize={isMobile ? 100 : 30}
-              className={isMobile ? "min-h-[200px]" : ""}
-            >
-              <ModelList />
             </ResizablePanel>
             
           </ResizablePanelGroup>

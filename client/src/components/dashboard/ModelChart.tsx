@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { 
+  ComposedChart,
   Area, 
   AreaChart, 
   CartesianGrid, 
+  Line,
   ResponsiveContainer, 
   Tooltip, 
   XAxis, 
-  YAxis 
+  YAxis,
+  Legend
 } from "recharts";
 import { 
   Select, 
@@ -23,54 +26,92 @@ import {
   Settings, 
   MoreHorizontal,
   TrendingUp,
-  TrendingDown
+  TrendingDown,
+  X
 } from "lucide-react";
+import { MODELS, generateBenchmarkTimeSeries } from "@/lib/mockData";
 
-const mockData = Array.from({ length: 100 }, (_, i) => ({
-  time: i,
-  value: 50 + Math.random() * 30 + Math.sin(i / 10) * 20,
-  cost: 20 + Math.random() * 10 + i * 0.2,
-}));
+interface ModelChartProps {
+  selectedModels?: string[];
+  onModelRemove?: (modelId: string) => void;
+}
 
-export default function ModelChart() {
-  const [timeRange, setTimeRange] = useState("1D");
+export default function ModelChart({ selectedModels = ["gpt-4o"], onModelRemove }: ModelChartProps) {
+  const [timeRange, setTimeRange] = useState("1M");
+  const [benchmark, setBenchmark] = useState("mmlu-pro");
+
+  // Generate chart data with selected models
+  const generateChartData = () => {
+    const baseData = generateBenchmarkTimeSeries(selectedModels[0], benchmark, 100);
+    
+    selectedModels.forEach((modelId, idx) => {
+      if (idx === 0) return;
+      const modelData = generateBenchmarkTimeSeries(modelId, benchmark, 100);
+      modelData.forEach((entry, i) => {
+        baseData[i] = { ...baseData[i], ...entry };
+      });
+    });
+    
+    return baseData;
+  };
+
+  const chartData = generateChartData();
 
   return (
     <div className="flex flex-col h-full bg-card">
       {/* Chart Toolbar */}
-      <div className="flex items-center justify-between p-2 border-b border-border">
-        <div className="flex items-center gap-2 overflow-x-auto">
-          <div className="flex items-center gap-2 px-2 border-r border-border pr-4">
-            <span className="font-bold text-lg">GPT-4</span>
-            <span className="text-xs font-mono bg-secondary px-1.5 py-0.5 rounded text-muted-foreground">OPENAI</span>
+      <div className="flex items-center justify-between p-3 border-b border-border gap-4 flex-wrap">
+        <div className="flex items-center gap-3 overflow-x-auto flex-1">
+          {/* Selected Models */}
+          <div className="flex items-center gap-2 border-r border-border pr-3">
+            {selectedModels.length === 0 ? (
+              <span className="text-sm text-muted-foreground">No models selected</span>
+            ) : (
+              selectedModels.slice(0, 3).map((modelId) => {
+                const model = MODELS[modelId];
+                return (
+                  <div key={modelId} className="flex items-center gap-2 px-2 py-1 rounded bg-secondary/30 border border-border/50">
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: model?.color || "#0066FF" }}
+                    />
+                    <span className="text-sm font-medium">{model?.name || "Unknown"}</span>
+                    {onModelRemove && (
+                      <button
+                        onClick={() => onModelRemove(modelId)}
+                        className="hover:text-destructive transition-colors ml-1"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
+                );
+              })
+            )}
+            {selectedModels.length > 3 && (
+              <span className="text-xs text-muted-foreground px-2">+{selectedModels.length - 3}</span>
+            )}
           </div>
           
-          <div className="flex items-center gap-4 px-2">
-            <div className="flex flex-col">
-              <span className="text-[10px] text-muted-foreground uppercase">MMLU Score</span>
-              <span className="text-sm font-mono font-medium text-primary flex items-center gap-1">
-                86.4% <TrendingUp className="h-3 w-3" />
-              </span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] text-muted-foreground uppercase">Latency (P99)</span>
-              <span className="text-sm font-mono font-medium text-red-400 flex items-center gap-1">
-                420ms <TrendingDown className="h-3 w-3" />
-              </span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] text-muted-foreground uppercase">Cost / 1M</span>
-              <span className="text-sm font-mono font-medium text-foreground">
-                $30.00
-              </span>
-            </div>
-          </div>
+          {/* Benchmark Selector */}
+          <select
+            value={benchmark}
+            onChange={(e) => setBenchmark(e.target.value)}
+            className="text-xs px-2 py-1 rounded border border-border bg-background"
+          >
+            <option value="mmlu-pro">MMLU Pro</option>
+            <option value="gpqa">GPQA</option>
+            <option value="ifeval">IFEval</option>
+            <option value="human-eval">HumanEval</option>
+            <option value="gsm8k">GSM8K</option>
+            <option value="math">MATH</option>
+          </select>
         </div>
 
-        <div className="flex items-center gap-1">
-          <Tabs value={timeRange} onValueChange={setTimeRange} className="mr-2">
+        <div className="flex items-center gap-2">
+          <Tabs value={timeRange} onValueChange={setTimeRange}>
             <TabsList className="h-8 bg-secondary/50">
-              {["1H", "1D", "1W", "1M", "YTD", "ALL"].map((range) => (
+              {["1W", "1M", "3M", "6M", "YTD", "ALL"].map((range) => (
                 <TabsTrigger 
                   key={range} 
                   value={range}
@@ -97,12 +138,25 @@ export default function ModelChart() {
       {/* Chart Area */}
       <div className="flex-1 relative min-h-0">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={mockData}>
+          <ComposedChart data={chartData}>
             <defs>
-              <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-              </linearGradient>
+              {selectedModels.map((modelId) => {
+                const model = MODELS[modelId];
+                const color = model?.color || "#0066FF";
+                return (
+                  <linearGradient
+                    key={`gradient-${modelId}`}
+                    id={`gradient-${modelId}`}
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop offset="5%" stopColor={color} stopOpacity={0.2} />
+                    <stop offset="95%" stopColor={color} stopOpacity={0} />
+                  </linearGradient>
+                );
+              })}
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
             <XAxis 
@@ -118,33 +172,52 @@ export default function ModelChart() {
               tickLine={false}
               axisLine={false}
               orientation="right"
-              domain={['auto', 'auto']}
+              domain={[0, 100]}
             />
             <Tooltip 
               contentStyle={{ 
                 backgroundColor: 'hsl(var(--card))', 
                 borderColor: 'hsl(var(--border))',
-                fontSize: '12px'
+                borderRadius: '8px',
+                fontSize: '12px',
+                padding: '8px',
               }}
-              itemStyle={{ color: 'hsl(var(--foreground))' }}
+              labelStyle={{ color: 'hsl(var(--foreground))' }}
+              formatter={(value) => typeof value === 'number' ? value.toFixed(1) : value}
             />
-            <Area 
-              type="monotone" 
-              dataKey="value" 
-              stroke="hsl(var(--primary))" 
-              strokeWidth={2}
-              fillOpacity={1} 
-              fill="url(#colorValue)" 
-            />
-          </AreaChart>
+            {selectedModels.length > 0 && <Legend wrapperStyle={{ paddingTop: '16px' }} />}
+            
+            {/* Render lines/areas for each model */}
+            {selectedModels.map((modelId, idx) => {
+              const model = MODELS[modelId];
+              const color = model?.color || "#0066FF";
+              
+              return selectedModels.length > 1 ? (
+                <Line
+                  key={modelId}
+                  type="monotone"
+                  dataKey={modelId}
+                  stroke={color}
+                  strokeWidth={2}
+                  dot={false}
+                  isAnimationActive={false}
+                  name={model?.name}
+                />
+              ) : (
+                <Area
+                  key={modelId}
+                  type="monotone"
+                  dataKey={modelId}
+                  stroke={color}
+                  strokeWidth={2}
+                  fill={`url(#gradient-${modelId})`}
+                  isAnimationActive={false}
+                  name={model?.name}
+                />
+              );
+            })}
+          </ComposedChart>
         </ResponsiveContainer>
-        
-        {/* Overlay Indicators (Mock) */}
-        <div className="absolute top-4 left-4 flex flex-col gap-1 pointer-events-none">
-          <div className="bg-card/80 backdrop-blur border border-border p-2 rounded shadow-sm text-xs">
-            <span className="text-primary font-bold">MMLU</span> <span className="text-muted-foreground">EMA(9)</span>
-          </div>
-        </div>
       </div>
     </div>
   );
