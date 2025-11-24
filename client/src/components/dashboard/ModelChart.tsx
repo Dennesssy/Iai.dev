@@ -11,35 +11,27 @@ import {
   YAxis,
   Legend
 } from "recharts";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Maximize2, 
   Camera, 
   Settings, 
-  MoreHorizontal,
-  TrendingUp,
-  TrendingDown,
   X,
   ScatterChart as ScatterIcon,
   LineChart as LineChartIcon
 } from "lucide-react";
 import { MODELS, generateBenchmarkTimeSeries } from "@/lib/mockData";
 import BubbleChart from "./BubbleChart";
+import SyncComparisonCharts from "./SyncComparisonCharts";
 
 interface ModelChartProps {
   selectedModels?: string[];
   onModelRemove?: (modelId: string) => void;
+  comparisonMode?: boolean;
 }
 
-export default function ModelChart({ selectedModels = ["gpt-4o"], onModelRemove }: ModelChartProps) {
+export default function ModelChart({ selectedModels = ["gpt-4o"], onModelRemove, comparisonMode = false }: ModelChartProps) {
   const [timeRange, setTimeRange] = useState("1M");
   const [benchmark, setBenchmark] = useState("mmlu-pro");
   const [chartType, setChartType] = useState<"line" | "bubble">("bubble");
@@ -60,6 +52,11 @@ export default function ModelChart({ selectedModels = ["gpt-4o"], onModelRemove 
   };
 
   const chartData = generateChartData();
+
+  // If comparison mode is on, show the sync comparison charts
+  if (comparisonMode) {
+    return <SyncComparisonCharts />;
+  }
 
   return (
     <div className="flex flex-col h-full bg-card">
@@ -223,7 +220,7 @@ export default function ModelChart({ selectedModels = ["gpt-4o"], onModelRemove 
               {selectedModels.length > 0 && <Legend wrapperStyle={{ paddingTop: '16px' }} />}
               
               {/* Render lines/areas for each model */}
-              {selectedModels.map((modelId, idx) => {
+              {selectedModels.map((modelId) => {
                 const model = MODELS[modelId];
                 const color = model?.color || "#0066FF";
                 
