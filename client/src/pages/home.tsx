@@ -18,7 +18,6 @@ export default function Home() {
   const [selectedModels, setSelectedModels] = useState<string[]>(["gpt-4o"]);
   const [favorites, setFavorites] = useState<string[]>(["gpt-4o", "claude-3.5-sonnet", "llama-3.3-70b"]);
   const [selectedModel, setSelectedModel] = useState<string>("gpt-4o");
-  const [comparisonMode, setComparisonMode] = useState<boolean>(false);
 
   const handleToggleFavorite = (modelId: string) => {
     setFavorites((prev) =>
@@ -33,12 +32,9 @@ export default function Home() {
   return (
     <Shell>
       <div className="flex flex-1 w-full overflow-hidden">
-        {/* Left Sidebar - Categories with Comparison Toggle */}
+        {/* Left Sidebar - Categories */}
         <div className="hidden lg:block w-64 border-r border-border shrink-0">
-          <CategorySidebar 
-            comparisonMode={comparisonMode}
-            onComparisonModeChange={setComparisonMode}
-          />
+          <CategorySidebar />
         </div>
 
         {/* Main Workspace */}
@@ -53,59 +49,50 @@ export default function Home() {
               <ResizablePanelGroup direction="vertical">
                 
                 {/* Chart Area */}
-                <ResizablePanel defaultSize={comparisonMode ? 100 : 60} minSize={30}>
+                <ResizablePanel defaultSize={60} minSize={30}>
                   <ModelChart 
                     selectedModels={selectedModels} 
                     onModelRemove={handleModelRemove}
-                    comparisonMode={comparisonMode}
                   />
                 </ResizablePanel>
                 
-                {!comparisonMode && (
-                  <>
-                    <ResizableHandle withHandle />
-                    
-                    {/* Metrics / Provider Panel */}
-                    <ResizablePanel defaultSize={40} minSize={10}>
-                      <Tabs defaultValue="metrics" className="h-full flex flex-col">
-                        <TabsList className="h-10 border-b border-border bg-card rounded-none">
-                          <TabsTrigger value="metrics" className="text-sm">Metrics</TabsTrigger>
-                          <TabsTrigger value="providers" className="text-sm">Providers</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="metrics" className="flex-1 overflow-hidden">
-                          <MetricsPanel />
-                        </TabsContent>
-                        <TabsContent value="providers" className="flex-1 overflow-hidden">
-                          <ProviderRegistry selectedModelIds={selectedModels} />
-                        </TabsContent>
-                      </Tabs>
-                    </ResizablePanel>
-                  </>
-                )}
+                <ResizableHandle withHandle />
+                
+                {/* Metrics / Provider Panel */}
+                <ResizablePanel defaultSize={40} minSize={10}>
+                  <Tabs defaultValue="metrics" className="h-full flex flex-col">
+                    <TabsList className="h-10 border-b border-border bg-card rounded-none">
+                      <TabsTrigger value="metrics" className="text-sm">Metrics</TabsTrigger>
+                      <TabsTrigger value="providers" className="text-sm">Providers</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="metrics" className="flex-1 overflow-hidden">
+                      <MetricsPanel />
+                    </TabsContent>
+                    <TabsContent value="providers" className="flex-1 overflow-hidden">
+                      <ProviderRegistry selectedModelIds={selectedModels} />
+                    </TabsContent>
+                  </Tabs>
+                </ResizablePanel>
 
               </ResizablePanelGroup>
             </ResizablePanel>
             
-            {!comparisonMode && (
-              <>
-                <ResizableHandle withHandle />
-                
-                {/* Right Sidebar */}
-                <ResizablePanel 
-                  defaultSize={30}
-                  minSize={20}
-                  maxSize={isMobile ? 100 : 40}
-                  className={isMobile ? "min-h-[300px]" : ""}
-                >
-                  <RightSidebar
-                    favorites={favorites}
-                    onToggleFavorite={handleToggleFavorite}
-                    selectedModel={selectedModel}
-                    onSelectModel={setSelectedModel}
-                  />
-                </ResizablePanel>
-              </>
-            )}
+            <ResizableHandle withHandle />
+            
+            {/* Right Sidebar */}
+            <ResizablePanel 
+              defaultSize={30}
+              minSize={20}
+              maxSize={isMobile ? 100 : 40}
+              className={isMobile ? "min-h-[300px]" : ""}
+            >
+              <RightSidebar
+                favorites={favorites}
+                onToggleFavorite={handleToggleFavorite}
+                selectedModel={selectedModel}
+                onSelectModel={setSelectedModel}
+              />
+            </ResizablePanel>
             
           </ResizablePanelGroup>
         </div>
