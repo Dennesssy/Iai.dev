@@ -9,8 +9,14 @@ import { useQuery } from "@tanstack/react-query";
 export default function PerformanceLeaderboard() {
   const [period, setPeriod] = useState("1M");
   const [selectedModels, setSelectedModels] = useState(["gpt-4o", "claude-3.5-sonnet"]);
+  const [comparisonType, setComparisonType] = useState<"models" | "agents">("models");
+  const [selectedModel, setSelectedModel] = useState("gpt-4o");
 
   const periods = ["1D", "1W", "1M", "3M", "YTD", "ALL"];
+  const comparisonTypes = [
+    { value: "models", label: "📊 Models", description: "Compare LLM performance" },
+    { value: "agents", label: "🤖 Agents", description: "Compare AI trading agents" },
+  ];
 
   // Fetch live leaderboard data
   const { data: leaderboardData, refetch: refetchLeaderboard } = useQuery({
@@ -48,14 +54,53 @@ export default function PerformanceLeaderboard() {
 
   return (
     <div className="h-full flex flex-col bg-background">
-      {/* Header with Time Period Selector */}
+      {/* Header with Comparison Type Toggle */}
+      <div className="px-6 pt-4 pb-3 border-b border-border">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Performance Leaderboard</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {comparisonType === "models" 
+                ? "Compare LLM performance across benchmarks"
+                : "Compare AI agent trading performance"}
+            </p>
+          </div>
+        </div>
+
+        {/* Comparison Type Toggle */}
+        <div className="flex gap-2 mb-4">
+          {comparisonTypes.map((type) => (
+            <button
+              key={type.value}
+              onClick={() => setComparisonType(type.value as typeof comparisonType)}
+              className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all ${
+                comparisonType === type.value
+                  ? "border-primary bg-primary/10 text-foreground"
+                  : "border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/50"
+              }`}
+            >
+              <div className="text-sm font-semibold">{type.label}</div>
+              <div className="text-xs text-muted-foreground">{type.description}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Main Section with Time Period Selector */}
       <div className="flex items-center justify-between p-6 border-b border-border">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Performance Leaderboard</h1>
-          <p className="text-sm text-muted-foreground mt-1">Compare model performance across benchmarks</p>
+          <p className="text-xs font-medium text-muted-foreground uppercase">Select {comparisonType === "models" ? "Model" : "Agent"}</p>
         </div>
-        
         <div className="flex items-center gap-4">
+          {/* Selected Model/Agent Display */}
+          <div className="flex items-center gap-2 px-3 py-1 bg-secondary/50 border border-border rounded-lg">
+            <span className="text-xs font-medium text-foreground">
+              {comparisonType === "models" 
+                ? MODELS[selectedModel]?.name || "GPT-4o"
+                : selectedModel}
+            </span>
+          </div>
+
           <div className="flex gap-1 bg-card border border-border rounded-lg p-1">
             {periods.map((p) => (
               <button
