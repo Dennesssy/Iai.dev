@@ -115,10 +115,9 @@ export default function ModelChart({ selectedModels = ["gpt-4o"], onModelRemove,
       <div className="flex gap-3 h-36 border-b border-border bg-gradient-to-b from-white/50 to-white/20 p-3">
         {/* TradingView-style Toolbar - Left Side */}
         <div className="flex-1 flex flex-col gap-2 min-w-0">
-          {/* Toolbar Controls */}
+          {/* Toolbar Controls Row 1 */}
           <div className="flex items-center gap-3 flex-wrap overflow-x-auto no-scrollbar">
-          
-          {/* Symbol / Benchmark Selector */}
+            {/* Symbol / Benchmark Selector */}
           <div className="flex items-center gap-2 min-w-fit">
             <div className="flex items-center gap-2 px-2 py-1 rounded hover:bg-secondary/50 cursor-pointer transition-colors border border-transparent hover:border-border/50">
               <span className="font-bold text-sm tracking-tight">MMLU-PRO</span>
@@ -173,13 +172,14 @@ export default function ModelChart({ selectedModels = ["gpt-4o"], onModelRemove,
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Indicators / Plotting */}
-          <Button variant="ghost" size="sm" className="h-7 gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground px-2">
-            <Activity className="h-4 w-4" />
-            <span className="hidden sm:inline">Indicators</span>
-          </Button>
+            {/* Indicators / Plotting */}
+            <Button variant="ghost" size="sm" className="h-7 gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground px-2">
+              <Activity className="h-4 w-4" />
+              <span className="hidden sm:inline">Indicators</span>
+            </Button>
+          </div>
 
-          {/* Right Group: Zoom, Save, Settings */}
+          {/* Toolbar Controls Row 2 - Right Group */}
           <div className="flex items-center gap-1 flex-wrap">
             <div className="flex items-center bg-secondary/30 rounded-md p-0.5">
               <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground">
