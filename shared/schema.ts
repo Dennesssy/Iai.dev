@@ -7,7 +7,7 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
-  credits: decimal("credits", { precision: 10, scale: 2 }).notNull().default("1.00"),
+  credits: decimal("credits").notNull().default("1.00"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -18,7 +18,7 @@ export const usageHistory = pgTable("usage_history", {
   provider: text("provider").notNull(),
   inputTokens: integer("input_tokens").notNull(),
   outputTokens: integer("output_tokens").notNull(),
-  costUsd: decimal("cost_usd", { precision: 10, scale: 6 }).notNull(),
+  costUsd: decimal("cost_usd").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
