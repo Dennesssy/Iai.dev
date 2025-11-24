@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useLocation } from "wouter";
 import TickerTape from "@/components/dashboard/TickerTape";
+import TimeNotificationHub from "@/components/layout/TimeNotificationHub";
 import logo from "@assets/generated_images/a_sleek,_modern,_abstract_logo_for_an_ai_analytics_platform_called_llmview.png";
 
 export default function Shell({ children }: { children: React.ReactNode }) {
@@ -94,6 +95,11 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           </nav>
         </div>
 
+        {/* Center: Time & Notifications Hub */}
+        <div className="hidden md:flex flex-1 justify-center">
+          <TimeNotificationHub />
+        </div>
+
         <div className="flex items-center gap-2 md:gap-4 flex-1 justify-end max-w-xl ml-4">
           <div className="relative w-full max-w-md hidden md:block">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -104,9 +110,6 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           </div>
           
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
-              <Bell className="h-5 w-5" />
-            </Button>
             <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
               <Settings className="h-5 w-5" />
             </Button>
