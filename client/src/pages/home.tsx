@@ -11,6 +11,7 @@ import ModelChart from "@/components/dashboard/ModelChart";
 import RightSidebar from "@/components/dashboard/RightSidebar";
 import ProviderRegistry from "@/components/dashboard/ProviderRegistry";
 import MetricsPanel from "@/components/dashboard/MetricsPanel";
+import TrendingContent from "@/components/dashboard/TrendingContent";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Home() {
@@ -52,13 +53,29 @@ export default function Home() {
             <ResizablePanel defaultSize={70} minSize={50}>
               <ResizablePanelGroup direction="vertical">
                 
-                {/* Chart Area */}
+                {/* Chart Area & Trending Content */}
                 <ResizablePanel defaultSize={comparisonMode ? 100 : 60} minSize={30}>
-                  <ModelChart 
-                    selectedModels={selectedModels} 
-                    onModelRemove={handleModelRemove}
-                    comparisonMode={comparisonMode}
-                  />
+                  <ResizablePanelGroup direction="vertical">
+                    {/* Chart Area */}
+                    <ResizablePanel defaultSize={60} minSize={30}>
+                      <ModelChart 
+                        selectedModels={selectedModels} 
+                        onModelRemove={handleModelRemove}
+                        comparisonMode={comparisonMode}
+                      />
+                    </ResizablePanel>
+                    
+                    {!comparisonMode && (
+                      <>
+                        <ResizableHandle withHandle />
+                        
+                        {/* Trending Content */}
+                        <ResizablePanel defaultSize={40} minSize={20}>
+                          <TrendingContent />
+                        </ResizablePanel>
+                      </>
+                    )}
+                  </ResizablePanelGroup>
                 </ResizablePanel>
                 
                 {!comparisonMode && (
