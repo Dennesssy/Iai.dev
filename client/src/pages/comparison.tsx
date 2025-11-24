@@ -1,11 +1,11 @@
 import Shell from "@/components/layout/Shell";
-import ComparisonChart from "@/components/dashboard/ComparisonChart";
+import PerformanceLeaderboard from "@/components/dashboard/PerformanceLeaderboard";
 
 export default function Comparison() {
   return (
     <Shell>
       <div className="w-full h-full overflow-auto">
-        <ComparisonChart />
+        <PerformanceLeaderboard />
       </div>
     </Shell>
   );
