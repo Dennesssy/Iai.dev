@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Shell from "@/components/layout/Shell";
 import ModelNavigator from "@/components/dashboard/ModelNavigator";
 import ModelChart from "@/components/dashboard/ModelChart";
+import RightSidebar from "@/components/dashboard/RightSidebar";
 import ProviderRegistry from "@/components/dashboard/ProviderRegistry";
 import MetricsPanel from "@/components/dashboard/MetricsPanel";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -15,6 +16,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 export default function Home() {
   const isMobile = useIsMobile();
   const [selectedModels, setSelectedModels] = useState<string[]>(["gpt-4o"]);
+  const [favorites, setFavorites] = useState<string[]>(["gpt-4o", "claude-3.5-sonnet", "llama-3.3-70b"]);
+  const [selectedModel, setSelectedModel] = useState<string>("gpt-4o");
 
   const handleModelSelect = (modelId: string) => {
     if (!selectedModels.includes(modelId)) {
@@ -28,6 +31,12 @@ export default function Home() {
 
   const handleModelRemove = (modelId: string) => {
     handleModelDeselect(modelId);
+  };
+
+  const handleToggleFavorite = (modelId: string) => {
+    setFavorites((prev) =>
+      prev.includes(modelId) ? prev.filter((id) => id !== modelId) : [...prev, modelId]
+    );
   };
 
   return (
@@ -50,7 +59,7 @@ export default function Home() {
           >
             
             {/* Center + Bottom Area */}
-            <ResizablePanel defaultSize={80} minSize={50}>
+            <ResizablePanel defaultSize={70} minSize={50}>
               <ResizablePanelGroup direction="vertical">
                 
                 {/* Chart Area */}
@@ -80,6 +89,23 @@ export default function Home() {
                 </ResizablePanel>
 
               </ResizablePanelGroup>
+            </ResizablePanel>
+            
+            <ResizableHandle withHandle />
+            
+            {/* Right Sidebar */}
+            <ResizablePanel 
+              defaultSize={30}
+              minSize={20}
+              maxSize={isMobile ? 100 : 40}
+              className={isMobile ? "min-h-[300px]" : ""}
+            >
+              <RightSidebar
+                favorites={favorites}
+                onToggleFavorite={handleToggleFavorite}
+                selectedModel={selectedModel}
+                onSelectModel={setSelectedModel}
+              />
             </ResizablePanel>
             
           </ResizablePanelGroup>

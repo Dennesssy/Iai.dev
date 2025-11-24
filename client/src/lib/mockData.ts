@@ -6,6 +6,7 @@ export interface ModelData {
   creator: string;
   creatorLogo?: string;
   releaseDate: string;
+  trainingDataCutoff: string;
   parameters: string;
   contextWindow: number;
   multimodal: boolean;
@@ -14,6 +15,7 @@ export interface ModelData {
   costTier: "free" | "budget" | "midmarket" | "enterprise";
   size: "nano" | "small" | "medium" | "large" | "frontier";
   color: string;
+  trend?: "up" | "down" | "stable";
 }
 
 export interface ProviderEndpoint {
@@ -41,6 +43,39 @@ export interface BenchmarkScore {
   lastUpdated: string;
 }
 
+export interface NewsItem {
+  id: string;
+  title: string;
+  description: string;
+  type: "release" | "benchmark" | "pricing" | "provider" | "research";
+  modelId?: string;
+  timestamp: string;
+  icon: string;
+}
+
+export interface Alert {
+  id: string;
+  type: "performance" | "price" | "release" | "provider";
+  title: string;
+  description: string;
+  modelId?: string;
+  severity: "info" | "warning" | "critical";
+  timestamp: string;
+}
+
+export interface CommunityPost {
+  id: string;
+  author: string;
+  avatar: string;
+  title: string;
+  content: string;
+  category: "discussion" | "tip" | "review";
+  modelId?: string;
+  upvotes: number;
+  replies: number;
+  timestamp: string;
+}
+
 // Models Database
 export const MODELS: Record<string, ModelData> = {
   "gpt-4-turbo": {
@@ -48,6 +83,7 @@ export const MODELS: Record<string, ModelData> = {
     name: "GPT-4 Turbo",
     creator: "OpenAI",
     releaseDate: "2024-04-09",
+    trainingDataCutoff: "2023-12",
     parameters: "≈1.76T",
     contextWindow: 128000,
     multimodal: true,
@@ -56,12 +92,14 @@ export const MODELS: Record<string, ModelData> = {
     costTier: "enterprise",
     size: "frontier",
     color: "#0066FF",
+    trend: "stable",
   },
   "gpt-4o": {
     id: "gpt-4o",
     name: "GPT-4o",
     creator: "OpenAI",
     releaseDate: "2024-05-13",
+    trainingDataCutoff: "2024-04",
     parameters: "≈1.76T",
     contextWindow: 128000,
     multimodal: true,
@@ -70,12 +108,14 @@ export const MODELS: Record<string, ModelData> = {
     costTier: "enterprise",
     size: "frontier",
     color: "#0066FF",
+    trend: "up",
   },
   "gpt-4o-mini": {
     id: "gpt-4o-mini",
     name: "GPT-4o Mini",
     creator: "OpenAI",
     releaseDate: "2024-07-18",
+    trainingDataCutoff: "2024-04",
     parameters: "≈14B",
     contextWindow: 128000,
     multimodal: true,
@@ -84,12 +124,14 @@ export const MODELS: Record<string, ModelData> = {
     costTier: "midmarket",
     size: "small",
     color: "#0066FF",
+    trend: "up",
   },
   "claude-3.5-sonnet": {
     id: "claude-3.5-sonnet",
     name: "Claude 3.5 Sonnet",
     creator: "Anthropic",
     releaseDate: "2024-06-20",
+    trainingDataCutoff: "2024-04",
     parameters: "Unknown",
     contextWindow: 200000,
     multimodal: true,
@@ -98,12 +140,14 @@ export const MODELS: Record<string, ModelData> = {
     costTier: "enterprise",
     size: "frontier",
     color: "#CA8F2B",
+    trend: "up",
   },
   "claude-3.5-haiku": {
     id: "claude-3.5-haiku",
     name: "Claude 3.5 Haiku",
     creator: "Anthropic",
     releaseDate: "2024-11-15",
+    trainingDataCutoff: "2024-07",
     parameters: "≈8B",
     contextWindow: 200000,
     multimodal: true,
@@ -112,12 +156,14 @@ export const MODELS: Record<string, ModelData> = {
     costTier: "budget",
     size: "small",
     color: "#CA8F2B",
+    trend: "up",
   },
   "llama-3.3-70b": {
     id: "llama-3.3-70b",
     name: "Llama 3.3 70B",
     creator: "Meta",
     releaseDate: "2024-11-07",
+    trainingDataCutoff: "2024-03",
     parameters: "70B",
     contextWindow: 8192,
     multimodal: false,
@@ -126,12 +172,14 @@ export const MODELS: Record<string, ModelData> = {
     costTier: "budget",
     size: "large",
     color: "#FF6B35",
+    trend: "up",
   },
   "llama-3.1-8b": {
     id: "llama-3.1-8b",
     name: "Llama 3.1 8B",
     creator: "Meta",
     releaseDate: "2024-07-23",
+    trainingDataCutoff: "2024-03",
     parameters: "8B",
     contextWindow: 128000,
     multimodal: false,
@@ -140,12 +188,14 @@ export const MODELS: Record<string, ModelData> = {
     costTier: "free",
     size: "small",
     color: "#FF6B35",
+    trend: "stable",
   },
   "deepseek-v2": {
     id: "deepseek-v2",
     name: "DeepSeek V2",
     creator: "DeepSeek",
     releaseDate: "2024-05-06",
+    trainingDataCutoff: "2024-04",
     parameters: "236B (MoE)",
     contextWindow: 4096,
     multimodal: false,
@@ -154,12 +204,14 @@ export const MODELS: Record<string, ModelData> = {
     costTier: "budget",
     size: "frontier",
     color: "#0066FF",
+    trend: "up",
   },
   "mixtral-8x7b": {
     id: "mixtral-8x7b",
     name: "Mixtral 8x7B",
     creator: "Mistral AI",
     releaseDate: "2023-12-11",
+    trainingDataCutoff: "2023-12",
     parameters: "56B (MoE)",
     contextWindow: 32768,
     multimodal: false,
@@ -168,12 +220,14 @@ export const MODELS: Record<string, ModelData> = {
     costTier: "budget",
     size: "large",
     color: "#FF8C42",
+    trend: "down",
   },
   "mistral-large": {
     id: "mistral-large",
     name: "Mistral Large",
     creator: "Mistral AI",
     releaseDate: "2024-02-16",
+    trainingDataCutoff: "2024-01",
     parameters: "Unknown",
     contextWindow: 32768,
     multimodal: false,
@@ -182,12 +236,14 @@ export const MODELS: Record<string, ModelData> = {
     costTier: "midmarket",
     size: "large",
     color: "#FF8C42",
+    trend: "stable",
   },
   "gemini-2.0-flash": {
     id: "gemini-2.0-flash",
     name: "Gemini 2.0 Flash",
     creator: "Google",
     releaseDate: "2024-12-11",
+    trainingDataCutoff: "2024-10",
     parameters: "Unknown",
     contextWindow: 1000000,
     multimodal: true,
@@ -196,12 +252,14 @@ export const MODELS: Record<string, ModelData> = {
     costTier: "enterprise",
     size: "frontier",
     color: "#4285F4",
+    trend: "up",
   },
   "qwen2.5-72b": {
     id: "qwen2.5-72b",
     name: "Qwen2.5 72B",
     creator: "Alibaba",
     releaseDate: "2024-10-10",
+    trainingDataCutoff: "2024-06",
     parameters: "72B",
     contextWindow: 131072,
     multimodal: false,
@@ -210,6 +268,7 @@ export const MODELS: Record<string, ModelData> = {
     costTier: "budget",
     size: "large",
     color: "#FF6B6B",
+    trend: "up",
   },
 };
 
@@ -479,3 +538,139 @@ export const MODEL_CATEGORIES = {
     },
   },
 };
+
+// News Feed
+export const AI_MARKET_NEWS: NewsItem[] = [
+  {
+    id: "news-1",
+    title: "Gemini 2.0 Flash Released",
+    description: "Google releases Gemini 2.0 Flash with 1M context window and native tool use",
+    type: "release",
+    modelId: "gemini-2.0-flash",
+    timestamp: "2024-12-11T10:00:00Z",
+    icon: "🚀",
+  },
+  {
+    id: "news-2",
+    title: "Claude 3.5 Haiku Now Available",
+    description: "Anthropic launches new small but powerful Claude 3.5 Haiku model",
+    type: "release",
+    modelId: "claude-3.5-haiku",
+    timestamp: "2024-11-15T14:30:00Z",
+    icon: "🚀",
+  },
+  {
+    id: "news-3",
+    title: "OpenAI Cuts GPT-4 Pricing by 20%",
+    description: "OpenAI announces significant price reductions for GPT-4 and GPT-4o",
+    type: "pricing",
+    timestamp: "2024-11-20T09:15:00Z",
+    icon: "💰",
+  },
+  {
+    id: "news-4",
+    title: "Llama 3.3 70B Hits 85.2% on MMLU-Pro",
+    description: "Meta's latest model shows strong performance improvements on key benchmarks",
+    type: "benchmark",
+    modelId: "llama-3.3-70b",
+    timestamp: "2024-11-10T16:45:00Z",
+    icon: "📈",
+  },
+  {
+    id: "news-5",
+    title: "Groq Expands API Availability",
+    description: "Groq API now available in 5 new regions with improved uptime SLA",
+    type: "provider",
+    timestamp: "2024-11-18T11:20:00Z",
+    icon: "🌍",
+  },
+];
+
+// Alerts
+export const ALERTS: Alert[] = [
+  {
+    id: "alert-1",
+    type: "performance",
+    title: "GPT-4 Benchmark Improved",
+    description: "GPT-4o MMLU-Pro score up 2.1% - now 88.7%",
+    modelId: "gpt-4o",
+    severity: "info",
+    timestamp: "2024-11-23T08:30:00Z",
+  },
+  {
+    id: "alert-2",
+    type: "price",
+    title: "Anthropic API Price Alert",
+    description: "Claude 3.5 Sonnet pricing increased 5% effective next month",
+    modelId: "claude-3.5-sonnet",
+    severity: "warning",
+    timestamp: "2024-11-22T15:45:00Z",
+  },
+  {
+    id: "alert-3",
+    type: "release",
+    title: "New Model Released",
+    description: "Gemini 2.0 Flash is now available for production use",
+    modelId: "gemini-2.0-flash",
+    severity: "info",
+    timestamp: "2024-12-11T10:00:00Z",
+  },
+  {
+    id: "alert-4",
+    type: "provider",
+    title: "OpenAI Maintenance Window",
+    description: "Scheduled maintenance on Dec 24. Brief interruptions expected",
+    severity: "info",
+    timestamp: "2024-11-23T12:00:00Z",
+  },
+];
+
+// Community
+export const COMMUNITY_POSTS: CommunityPost[] = [
+  {
+    id: "post-1",
+    author: "alex_ml",
+    avatar: "👨‍💻",
+    title: "GPT-4o vs Claude 3.5: Cost Analysis",
+    content: "Running a comparison across our production workloads. GPT-4o is 30% cheaper but Claude slightly better for reasoning tasks.",
+    category: "review",
+    modelId: "gpt-4o",
+    upvotes: 234,
+    replies: 45,
+    timestamp: "2024-11-20T14:20:00Z",
+  },
+  {
+    id: "post-2",
+    author: "dev_insights",
+    avatar: "🔧",
+    title: "Pro Tip: Route Complex Queries to Opus",
+    content: "Discovered that routing only 15% of queries to Claude for reasoning saves 40% on compute while maintaining quality. Simple QA still works great with GPT-4o Mini.",
+    category: "tip",
+    upvotes: 512,
+    replies: 87,
+    timestamp: "2024-11-19T10:45:00Z",
+  },
+  {
+    id: "post-3",
+    author: "budget_conscious",
+    avatar: "💸",
+    title: "Llama 3.3 70B is Actually Production Ready",
+    content: "Been testing Llama 3.3 for 2 weeks. At $0.59/1M tokens via Groq, it's unbeatable. Performance is 85%+ across benchmarks. Real game changer.",
+    category: "review",
+    modelId: "llama-3.3-70b",
+    upvotes: 867,
+    replies: 143,
+    timestamp: "2024-11-17T16:30:00Z",
+  },
+  {
+    id: "post-4",
+    author: "ai_researcher",
+    avatar: "🧬",
+    title: "Multimodal Reasoning: GPT-4o vs Gemini 2.0",
+    content: "Preliminary tests show Gemini 2.0 Flash excels at image understanding while GPT-4o stronger on text reasoning. Context window matters!",
+    category: "discussion",
+    upvotes: 445,
+    replies: 92,
+    timestamp: "2024-11-21T13:15:00Z",
+  },
+];
