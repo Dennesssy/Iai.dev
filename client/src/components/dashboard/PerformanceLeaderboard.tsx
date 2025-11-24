@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LineChart, Line, AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Button } from "@/components/ui/button";
-import { ArrowUp, ArrowDown, TrendingUp, Download, Share2 } from "lucide-react";
+import { ArrowUp, ArrowDown, TrendingUp, Download, Share2, RefreshCw } from "lucide-react";
 import { MODELS, generateBenchmarkTimeSeries } from "@/lib/mockData";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useQuery } from "@tanstack/react-query";
 
 export default function PerformanceLeaderboard() {
   const [period, setPeriod] = useState("1M");
@@ -11,42 +12,39 @@ export default function PerformanceLeaderboard() {
 
   const periods = ["1D", "1W", "1M", "3M", "YTD", "ALL"];
 
-  // Generate performance data
-  const generatePerformanceData = () => {
-    const baseData = generateBenchmarkTimeSeries(selectedModels[0], "mmlu-pro", 30);
-    
-    selectedModels.forEach((modelId, idx) => {
-      if (idx === 0) return;
-      const modelData = generateBenchmarkTimeSeries(modelId, "mmlu-pro", 30);
-      modelData.forEach((entry, i) => {
-        if (baseData[i]) {
-          baseData[i] = { ...baseData[i], [modelId]: entry[modelId] };
-        }
-      });
-    });
-    
-    return baseData;
+  // Fetch live leaderboard data
+  const { data: leaderboardData, refetch: refetchLeaderboard } = useQuery({
+    queryKey: ["/api/leaderboard", period],
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+
+  // Fetch live time series data
+  const { data: timeSeriesData, refetch: refetchTimeSeries } = useQuery({
+    queryKey: ["/api/performance/timeseries", period, selectedModels.join(",")],
+    refetchInterval: 30000,
+  });
+
+  // Fetch live stats
+  const { data: statsData } = useQuery({
+    queryKey: ["/api/performance/stats"],
+    refetchInterval: 60000, // Refresh every minute
+  });
+
+  // Fetch recent activity
+  const { data: activityData } = useQuery({
+    queryKey: ["/api/performance/activity"],
+    refetchInterval: 30000,
+  });
+
+  // Use live data or fallback to mock
+  const performanceData = timeSeriesData?.data || [];
+  const leaderboardStats = leaderboardData?.data || [];
+  const stats = statsData || {
+    activeModels: 24,
+    bestModel: "GPT-4o",
+    bestScore: 94.8,
   };
-
-  const performanceData = generatePerformanceData();
-
-  // Calculate leaderboard stats
-  const leaderboardStats = selectedModels.map((modelId) => {
-    const model = MODELS[modelId];
-    const data = performanceData;
-    const latestScore = data[data.length - 1]?.[modelId] || 0;
-    const previousScore = data[0]?.[modelId] || 0;
-    const change = ((latestScore - previousScore) / previousScore) * 100;
-
-    return {
-      id: modelId,
-      name: model?.name || "Unknown",
-      score: latestScore,
-      change,
-      trend: change > 0 ? "up" : change < 0 ? "down" : "stable",
-      color: model?.color || "#0066FF",
-    };
-  }).sort((a, b) => b.score - a.score);
+  const activities = activityData?.data || [];
 
   return (
     <div className="h-full flex flex-col bg-background">
@@ -75,6 +73,18 @@ export default function PerformanceLeaderboard() {
           </div>
 
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => {
+                refetchLeaderboard();
+                refetchTimeSeries();
+              }}
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
             <Button variant="outline" size="sm" className="gap-2">
               <Download className="h-4 w-4" />
               Export
@@ -230,15 +240,22 @@ export default function PerformanceLeaderboard() {
             <div className="bg-card border border-border rounded-lg p-4">
               <h3 className="text-sm font-semibold text-foreground mb-3">💹 Recent Updates</h3>
               <div className="space-y-2 text-xs">
-                <p className="text-muted-foreground">
-                  <span className="font-medium text-foreground">GPT-4o</span> achieved new MMLU-Pro high
-                </p>
-                <p className="text-muted-foreground">
-                  <span className="font-medium text-foreground">Claude 3.5</span> updated to latest version
-                </p>
-                <p className="text-muted-foreground">
-                  <span className="font-medium text-foreground">DeepSeek R1</span> now available for testing
-                </p>
+                {activities.slice(0, 3).map((activity: any) => (
+                  <p key={activity.id} className="text-muted-foreground">
+                    <span className="font-medium text-foreground">{activity.modelName}</span>{" "}
+                    {activity.message}
+                  </p>
+                ))}
+                {activities.length === 0 && (
+                  <>
+                    <p className="text-muted-foreground">
+                      <span className="font-medium text-foreground">GPT-4o</span> achieved new MMLU-Pro high
+                    </p>
+                    <p className="text-muted-foreground">
+                      <span className="font-medium text-foreground">Claude 3.5</span> updated to latest version
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           </div>
