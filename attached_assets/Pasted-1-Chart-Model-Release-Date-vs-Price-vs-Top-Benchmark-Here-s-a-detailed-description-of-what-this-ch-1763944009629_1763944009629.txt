@@ -1,0 +1,50 @@
+1. Chart: Model Release Date vs Price vs Top Benchmark
+Here's a detailed description of what this chart should show:
+Chart Type: Bubble/Scatter Chart with Timeline
+VISUALIZATION: Interactive Bubble Chart
+┌─────────────────────────────────────────────────────────────┐
+│ LLM Models: Release Timeline, Pricing & Performance (2025) │
+├─────────────────────────────────────────────────────────────┤
+│
+│  Price ($/1M tokens)                                         │
+│  ↑                                                            │
+│ 40│                                            ● GPT-5       │
+│   │                           ● Claude-4 Pro                │
+│ 30│              ● GPT-4 Turbo                 ● Grok-4      │
+│   │        ● Claude-3.5 Sonnet                              │
+│ 20│    ○ Mistral 7B                                          │
+│   │         ● O1-Preview         ● DeepSeek-V3             │
+│ 10│    ○ Llama-3.3   ○ Phi-3                                │
+│   │  ○ Qwen-2.5     ○ Open-Source Models                   │
+│  5│                                                          │
+│   │                                                          │
+│  0└─────────────────────────────────────────────────────────→
+│    Jan   Mar   May   Jul   Sep   Nov    Time (2025)         │
+│
+│ • Bubble size = MMLU-Pro Score (larger = higher score)     │
+│ ● Proprietary models (filled)                              │
+│ ○ Open-source models (hollow)                              │
+│ Color = Most common benchmark (see legend)                 │
+└─────────────────────────────────────────────────────────────┘
+Key Specifications:
+Axes:
+
+X-axis: Release date (month/week in 2025, or specific date)
+Y-axis: Price per 1M tokens ($/1M blended input+output)
+Bubble size: MMLU-Pro score (or selected benchmark score: 0-100 normalized)
+Bubble color: Most common benchmark type
+
+🔵 Blue = MMLU-Pro (general knowledge)
+🟢 Green = IFEval (instruction following)
+🟠 Orange = GPQA (reasoning)
+🟣 Purple = HumanEval (code generation)
+🟡 Yellow = GSM8K (math)
+
+
+
+Interactivity:
+
+Hover tooltip: Shows model name, release date, exact price, benchmark score, creator
+Click bubble: Loads full model details in sidebar
+Filter toggle: Show/hide proprietary vs open-source
+Benchmark selector: Switch color scheme to represent different benchmark
