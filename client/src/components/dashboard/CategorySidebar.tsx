@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, Grid2X2, Package, Bot, Building2 } from "lucide-react";
+import { ChevronDown, Grid2X2, Package, Bot, Building2, Code, Image, Video, Search, PenTool, Mic, Database, Microscope, MonitorSmartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,19 +10,118 @@ interface CategorySidebarProps {
   onComparisonModeChange?: (enabled: boolean) => void;
 }
 
-// Mock agents data
-const AGENTS = [
-  { id: "agent-1", name: "Code Analyst", modelIds: ["gpt-5.1", "claude-sonnet-4.5", "gemini-3-pro"] },
-  { id: "agent-2", name: "Research Assistant", modelIds: ["gemini-3-pro", "grok-4.1", "kimi-k2-thinking"] },
-  { id: "agent-3", name: "Data Extractor", modelIds: ["claude-3.5-sonnet", "gpt-4o", "llama-4-scout"] },
-  { id: "agent-4", name: "Math Solver", modelIds: ["kimi-k2-thinking", "gemini-3-pro", "deepseek-r1"] },
+// Updated Agent Categories
+const AGENT_CATEGORIES = [
+  { 
+    id: "cat-coding", 
+    name: "Coding", 
+    icon: Code,
+    agents: [
+      { name: "OpenCodeInterpreter", description: "Open source code execution" },
+      { name: "Crush", description: "AI IDE Assistant" },
+      { name: "Amazon Q", description: "AWS Developer Assistant" },
+      { name: "Claude Code", description: "Anthropic's coding agent" },
+      { name: "Void", description: "AI Code Editor" },
+      { name: "Trae IDE", description: "Integrated Development Environment" },
+      { name: "Cursor", description: "AI-first Code Editor" },
+      { name: "Cline", description: "Autonomous coding agent" },
+      { name: "Augmentcode", description: "Developer productivity tool" },
+      { name: "RooCode", description: "AI coding assistant" }
+    ]
+  },
+  { 
+    id: "cat-web", 
+    name: "Web Design", 
+    icon: MonitorSmartphone,
+    agents: [
+      { name: "Replit", description: "Web site generator & IDE" },
+      { name: "V0", description: "UI Component Generator" },
+      { name: "Lovable", description: "Full-stack web builder" }
+    ]
+  },
+  { 
+    id: "cat-image", 
+    name: "Image", 
+    icon: Image,
+    agents: [
+      { name: "Midjourney", description: "Artistic image generation" },
+      { name: "Flux", description: "High-fidelity image generation" },
+      { name: "Ideogram", description: "Typography-focused generation" }
+    ]
+  },
+  { 
+    id: "cat-video", 
+    name: "Video", 
+    icon: Video,
+    agents: [
+      { name: "Runway Gen-3", description: "Cinematic video generation" },
+      { name: "Sora", description: "OpenAI video model" },
+      { name: "Kling", description: "High-motion video generation" }
+    ]
+  },
+  { 
+    id: "cat-research", 
+    name: "Deep Research", 
+    icon: Microscope,
+    agents: [
+      { name: "Perplexity", description: "AI Search Engine" },
+      { name: "Consensus", description: "Scientific research assistant" },
+      { name: "Elicit", description: "Research paper analysis" }
+    ]
+  },
+  { 
+    id: "cat-writing", 
+    name: "Writing", 
+    icon: PenTool,
+    agents: [
+      { name: "Jasper", description: "Marketing copywriter" },
+      { name: "Copy.ai", description: "Content generation" },
+      { name: "Lex", description: "AI writing processor" }
+    ]
+  },
+  { 
+    id: "cat-speech", 
+    name: "Speech", 
+    icon: Mic,
+    agents: [
+      { name: "ElevenLabs", description: "Voice synthesis" },
+      { name: "PlayHT", description: "AI Voice Generation" }
+    ]
+  },
+  { 
+    id: "cat-search", 
+    name: "Search", 
+    icon: Search,
+    agents: [
+      { name: "Perplexity", description: "Real-time search" },
+      { name: "You.com", description: "AI Search Assistant" }
+    ]
+  },
+  { 
+    id: "cat-science", 
+    name: "Science", 
+    icon: Microscope,
+    agents: [
+      { name: "AlphaFold", description: "Protein structure prediction" },
+      { name: "Galactica", description: "Scientific knowledge base" }
+    ]
+  },
+  { 
+    id: "cat-embedding", 
+    name: "Embedding", 
+    icon: Database,
+    agents: [
+      { name: "Pinecone", description: "Vector database" },
+      { name: "Weaviate", description: "Vector search engine" }
+    ]
+  }
 ];
 
 export default function CategorySidebar({ comparisonMode = false, onComparisonModeChange }: CategorySidebarProps) {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     providers: true,
     models: true,
-    agents: false,
+    agents: true,
   });
   
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
@@ -79,15 +178,20 @@ export default function CategorySidebar({ comparisonMode = false, onComparisonMo
     </button>
   );
 
-  const NestedItem = ({ name, color, size = "small" }: any) => (
-    <div className="flex items-center gap-2 px-8 py-1.5 text-xs text-muted-foreground hover:text-foreground">
-      {color && (
-        <div
-          className={`rounded-full flex-shrink-0 ${size === "small" ? "w-2 h-2" : "w-2.5 h-2.5"}`}
-          style={{ backgroundColor: color }}
-        />
+  const NestedItem = ({ name, color, size = "small", description }: any) => (
+    <div className="flex flex-col px-8 py-1.5 hover:bg-secondary/5 group/item">
+      <div className="flex items-center gap-2 text-xs text-muted-foreground group-hover/item:text-foreground">
+        {color && (
+          <div
+            className={`rounded-full flex-shrink-0 ${size === "small" ? "w-2 h-2" : "w-2.5 h-2.5"}`}
+            style={{ backgroundColor: color }}
+          />
+        )}
+        <span className="truncate font-medium">{name}</span>
+      </div>
+      {description && (
+        <span className="text-[10px] text-muted-foreground/60 truncate pl-4">{description}</span>
       )}
-      <span className="truncate">{name}</span>
     </div>
   );
 
@@ -191,27 +295,24 @@ export default function CategorySidebar({ comparisonMode = false, onComparisonMo
             <SectionHeader icon={Bot} title="Agents" section="agents" />
             {expandedSections.agents && (
               <div className="bg-secondary/10">
-                {AGENTS.map((agent) => {
-                  const itemId = `agent-${agent.id}`;
+                {AGENT_CATEGORIES.map((category) => {
+                  const itemId = `agent-cat-${category.id}`;
                   return (
-                    <div key={agent.id}>
+                    <div key={category.id}>
                       <ItemRow
                         id={itemId}
-                        name={agent.name}
-                        icon={Bot}
+                        name={category.name}
+                        icon={category.icon}
                       />
                       {expandedItems[itemId] && (
                         <div className="bg-secondary/5">
-                          {agent.modelIds.map((modelId) => {
-                            const model = MODELS[modelId];
-                            return model ? (
-                              <NestedItem
-                                key={modelId}
-                                name={model.name}
-                                color={model.color}
-                              />
-                            ) : null;
-                          })}
+                          {category.agents.map((agent, idx) => (
+                            <NestedItem
+                              key={`${category.id}-${idx}`}
+                              name={agent.name}
+                              description={agent.description}
+                            />
+                          ))}
                         </div>
                       )}
                     </div>
