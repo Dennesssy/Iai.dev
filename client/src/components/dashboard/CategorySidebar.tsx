@@ -3,119 +3,12 @@ import { ChevronDown, Grid2X2, Package, Bot, Building2, Code, Image, Video, Sear
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MODELS, PROVIDERS } from "@/lib/mockData";
+import { MODELS, PROVIDERS, AGENT_CATEGORIES } from "@/lib/mockData";
 
 interface CategorySidebarProps {
   comparisonMode?: boolean;
   onComparisonModeChange?: (enabled: boolean) => void;
 }
-
-// Updated Agent Categories
-const AGENT_CATEGORIES = [
-  { 
-    id: "cat-coding", 
-    name: "Coding", 
-    icon: Code,
-    agents: [
-      { name: "OpenCodeInterpreter", description: "Open source code execution" },
-      { name: "Crush", description: "AI IDE Assistant" },
-      { name: "Amazon Q", description: "AWS Developer Assistant" },
-      { name: "Claude Code", description: "Anthropic's coding agent" },
-      { name: "Void", description: "AI Code Editor" },
-      { name: "Trae IDE", description: "Integrated Development Environment" },
-      { name: "Cursor", description: "AI-first Code Editor" },
-      { name: "Cline", description: "Autonomous coding agent" },
-      { name: "Augmentcode", description: "Developer productivity tool" },
-      { name: "RooCode", description: "AI coding assistant" }
-    ]
-  },
-  { 
-    id: "cat-web", 
-    name: "Web Design", 
-    icon: MonitorSmartphone,
-    agents: [
-      { name: "Replit", description: "Web site generator & IDE" },
-      { name: "V0", description: "UI Component Generator" },
-      { name: "Lovable", description: "Full-stack web builder" }
-    ]
-  },
-  { 
-    id: "cat-image", 
-    name: "Image", 
-    icon: Image,
-    agents: [
-      { name: "Midjourney", description: "Artistic image generation" },
-      { name: "Flux", description: "High-fidelity image generation" },
-      { name: "Ideogram", description: "Typography-focused generation" }
-    ]
-  },
-  { 
-    id: "cat-video", 
-    name: "Video", 
-    icon: Video,
-    agents: [
-      { name: "Runway Gen-3", description: "Cinematic video generation" },
-      { name: "Sora", description: "OpenAI video model" },
-      { name: "Kling", description: "High-motion video generation" }
-    ]
-  },
-  { 
-    id: "cat-research", 
-    name: "Deep Research", 
-    icon: Microscope,
-    agents: [
-      { name: "Perplexity", description: "AI Search Engine" },
-      { name: "Consensus", description: "Scientific research assistant" },
-      { name: "Elicit", description: "Research paper analysis" }
-    ]
-  },
-  { 
-    id: "cat-writing", 
-    name: "Writing", 
-    icon: PenTool,
-    agents: [
-      { name: "Jasper", description: "Marketing copywriter" },
-      { name: "Copy.ai", description: "Content generation" },
-      { name: "Lex", description: "AI writing processor" }
-    ]
-  },
-  { 
-    id: "cat-speech", 
-    name: "Speech", 
-    icon: Mic,
-    agents: [
-      { name: "ElevenLabs", description: "Voice synthesis" },
-      { name: "PlayHT", description: "AI Voice Generation" }
-    ]
-  },
-  { 
-    id: "cat-search", 
-    name: "Search", 
-    icon: Search,
-    agents: [
-      { name: "Perplexity", description: "Real-time search" },
-      { name: "You.com", description: "AI Search Assistant" }
-    ]
-  },
-  { 
-    id: "cat-science", 
-    name: "Science", 
-    icon: Microscope,
-    agents: [
-      { name: "AlphaFold", description: "Protein structure prediction" },
-      { name: "Galactica", description: "Scientific knowledge base" }
-    ]
-  },
-  { 
-    id: "cat-embedding", 
-    name: "Embedding", 
-    icon: Database,
-    agents: [
-      { name: "Pinecone", description: "Vector database" },
-      { name: "Weaviate", description: "Vector search engine" }
-    ]
-  }
-];
 
 export default function CategorySidebar({ comparisonMode = false, onComparisonModeChange }: CategorySidebarProps) {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
