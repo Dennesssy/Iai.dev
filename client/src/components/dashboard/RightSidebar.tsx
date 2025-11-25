@@ -9,11 +9,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import ModelDetails from "./ModelDetails";
-import SavedModels from "./SavedModels";
 import AiMarketNews from "./AiMarketNews";
 import AlertsPanel from "./AlertsPanel";
 import CommunityInsights from "./CommunityInsights";
-import ProviderRegistry from "./ProviderRegistry";
+import Watchlist from "./Watchlist";
 import { MODELS } from "@/lib/mockData";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -67,18 +66,11 @@ export default function RightSidebar({
       {/* Content */}
       <ScrollArea className="flex-1">
         <div className="flex flex-col">
-          {/* WATCHLIST SECTION (User Favorites) */}
+          {/* WATCHLIST SECTION */}
           <div className="border-b border-border/50">
             <SectionHeader icon={List} title="Watchlist" section="watchlist" />
             {expandedSections.watchlist && (
-              <div className="bg-secondary/10">
-                <SavedModels 
-                  favorites={favorites}
-                  onToggleFavorite={onToggleFavorite}
-                  selectedModel={selectedModel}
-                  onSelectModel={onSelectModel}
-                />
-              </div>
+              <Watchlist favorites={favorites} onToggleFavorite={onToggleFavorite} />
             )}
           </div>
 
