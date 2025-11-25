@@ -19,10 +19,16 @@ export default function PerformanceLeaderboard() {
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  // Fetch live time series data
-  const { data: timeSeriesData, refetch: refetchTimeSeries } = useQuery({
+  // Fetch live time series data - updates every 10 seconds for live trading
+  const { data: timeSeriesData, refetch: refetchTimeSeries, isLoading: isLoadingTimeSeries } = useQuery({
     queryKey: ["/api/performance/timeseries", period, selectedModels.join(",")],
-    refetchInterval: 30000,
+    refetchInterval: 10000, // Update every 10 seconds for live trading
+  });
+
+  // Fetch real-time portfolio snapshots for smooth live updates
+  const { data: liveData } = useQuery({
+    queryKey: ["/api/performance/live", selectedModels.join(",")],
+    refetchInterval: 5000, // Update every 5 seconds for near real-time trading
   });
 
   // Fetch live stats
@@ -209,7 +215,7 @@ export default function PerformanceLeaderboard() {
                 </ComposedChart>
               </ResponsiveContainer>
 
-              {/* Chart Stats */}
+              {/* Chart Stats - Live Updates */}
               <div className="flex items-center justify-between mt-5 pt-4 border-t border-border/30">
                 <div className="flex gap-4">
                   {selectedModels.map((modelId) => {
@@ -218,12 +224,18 @@ export default function PerformanceLeaderboard() {
                     const latest = data[data.length - 1]?.[modelId] || 0;
                     const first = data[0]?.[modelId] || 0;
                     const change = ((latest - first) / first) * 100;
+                    const liveUpdate = liveData?.data?.[modelId];
+                    const isUpdating = isLoadingTimeSeries;
+                    
                     return (
                       <div key={modelId} className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: model?.color }} />
                         <div className="text-xs">
                           <p className="text-muted-foreground">{model?.name}</p>
-                          <p className="font-bold text-foreground">{latest.toFixed(1)}</p>
+                          <p className={`font-bold transition-all ${isUpdating ? "opacity-50" : "opacity-100"}`}>
+                            ${liveUpdate?.portfolioValue ? liveUpdate.portfolioValue.toLocaleString() : latest.toFixed(0)}
+                            {isUpdating && <span className="ml-1 text-xs animate-pulse">📡</span>}
+                          </p>
                         </div>
                         {change !== 0 && (
                           <div className={`flex items-center gap-0.5 ${change > 0 ? "text-green-500" : "text-red-500"}`}>
@@ -238,6 +250,12 @@ export default function PerformanceLeaderboard() {
                 <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground hover:text-foreground">
                   Export
                 </Button>
+              </div>
+
+              {/* Live Status Indicator */}
+              <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span>Live trading • Updates every 10s</span>
               </div>
             </div>
           </div>

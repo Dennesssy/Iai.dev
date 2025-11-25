@@ -182,7 +182,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Live Performance API - Time series data (Portfolio evolution)
+  // Live Performance API - Time series data (Portfolio evolution with live trading)
   app.get("/api/performance/timeseries", async (req: Request, res: Response) => {
     try {
       const period = (req.query.period as string) || "1M";
@@ -193,15 +193,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const timeSeries: any[] = [];
       
       const now = new Date();
-      now.setHours(now.getHours(), 0, 0, 0);
+      now.setMinutes(now.getMinutes(), 0, 0);
       
-      // Initialize portfolio values
+      // Initialize portfolio values with realistic trading returns
       const portfolioValues: any = {};
+      const baseReturns: any = {};
       selectedAgentIds.forEach((agentId) => {
         portfolioValues[agentId] = 10000;
+        baseReturns[agentId] = (Math.random() - 0.5) * 0.4; // variance in returns
       });
       
-      // Generate realistic portfolio evolution
+      // Generate realistic portfolio evolution with live trading impact
       for (let i = 0; i < dataPoints; i++) {
         const timestamp = new Date(now.getTime() - (dataPoints - i) * 3600000);
         const dataPoint: any = {
@@ -210,10 +212,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
         
         selectedAgentIds.forEach((agentId) => {
-          const dailyReturn = 0.0015; // ~54% annual
+          // Base daily return (~15% average)
+          const baseReturn = 0.15;
+          const dailyReturn = (baseReturn + baseReturns[agentId]) / 365;
+          
+          // Add volatility and live trading impact
           const volatility = 0.03;
           const randomChange = (Math.random() - 0.5) * 2 * volatility;
-          const hourlyReturn = dailyReturn / 24 + randomChange / 24;
+          
+          // Live trading impact (small random trades affecting portfolio)
+          const tradingImpact = (Math.random() - 0.5) * 0.005;
+          
+          const hourlyReturn = dailyReturn / 24 + randomChange / 24 + tradingImpact;
           
           portfolioValues[agentId] *= (1 + hourlyReturn);
           dataPoint[agentId] = Math.round(portfolioValues[agentId] * 100) / 100;
@@ -236,6 +246,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch time series data" });
+    }
+  });
+
+  // Live Performance API - Real-time portfolio snapshots (for live updates)
+  app.get("/api/performance/live", async (req: Request, res: Response) => {
+    try {
+      const selectedAgentIds = (req.query.models as string)?.split(",") || ["gemini-2.5", "gpt-5"];
+      
+      const liveData: any = {};
+      
+      selectedAgentIds.forEach((agentId) => {
+        const baseReturn = 0.15;
+        const variance = (Math.random() - 0.5) * 0.4;
+        const dailyReturn = (baseReturn + variance) / 365;
+        const daysTraded = 120;
+        const compoundReturn = Math.pow(1 + dailyReturn, daysTraded) - 1;
+        
+        // Add minute-level trading impact
+        const lastMinuteGain = (Math.random() - 0.5) * 2;
+        const portfolioValue = 10000 * (1 + compoundReturn) * (1 + lastMinuteGain / 100000);
+        
+        liveData[agentId] = {
+          portfolioValue: Math.round(portfolioValue * 100) / 100,
+          dayChange: (Math.random() - 0.5) * 10,
+          lastUpdate: new Date().toISOString(),
+        };
+      });
+
+      res.json({
+        data: liveData,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch live portfolio data" });
     }
   });
 
