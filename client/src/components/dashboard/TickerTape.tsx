@@ -27,7 +27,7 @@ export default function TickerTape() {
           id: `${provider.id}-${model.id}`,
           symbol: model.name,
           provider: provider.name,
-          price: `$${endpoint.inputPrice.toFixed(2)}/$${endpoint.outputPrice.toFixed(2)}`,
+          price: `$${endpoint.inputPrice.toFixed(3)}/$${endpoint.outputPrice.toFixed(3)}`,
           latency: `${endpoint.ttftMs}ms`,
           trend: model.trend || "stable",
           color: model.color

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   ResizableHandle, 
   ResizablePanel, 
@@ -18,14 +18,23 @@ import { useIsMobile } from "@/hooks/use-mobile";
 export default function Home() {
   const isMobile = useIsMobile();
   const [selectedModels, setSelectedModels] = useState<string[]>(["gpt-4o"]);
-  const [favorites, setFavorites] = useState<string[]>(["gpt-4o", "claude-3.5-sonnet", "llama-3.3-70b"]);
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem("User[]Watchlist");
+      return stored ? JSON.parse(stored) : ["gpt-4o", "claude-3.5-sonnet", "llama-3.3-70b"];
+    } catch {
+      return ["gpt-4o", "claude-3.5-sonnet", "llama-3.3-70b"];
+    }
+  });
   const [selectedModel, setSelectedModel] = useState<string>("gpt-4o");
   const [comparisonMode, setComparisonMode] = useState<boolean>(false);
 
   const handleToggleFavorite = (modelId: string) => {
-    setFavorites((prev) =>
-      prev.includes(modelId) ? prev.filter((id) => id !== modelId) : [...prev, modelId]
-    );
+    setFavorites((prev) => {
+      const next = prev.includes(modelId) ? prev.filter((id) => id !== modelId) : [...prev, modelId];
+      localStorage.setItem("User[]Watchlist", JSON.stringify(next));
+      return next;
+    });
   };
 
   const handleModelRemove = (modelId: string) => {

@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import ModelDetails from "./ModelDetails";
+import SavedModels from "./SavedModels";
 import AiMarketNews from "./AiMarketNews";
 import AlertsPanel from "./AlertsPanel";
 import CommunityInsights from "./CommunityInsights";
@@ -66,12 +67,17 @@ export default function RightSidebar({
       {/* Content */}
       <ScrollArea className="flex-1">
         <div className="flex flex-col">
-          {/* WATCHLIST SECTION (Formerly Providers) */}
+          {/* WATCHLIST SECTION (User Favorites) */}
           <div className="border-b border-border/50">
             <SectionHeader icon={List} title="Watchlist" section="watchlist" />
             {expandedSections.watchlist && (
-              <div className="bg-secondary/10 p-0">
-                 <ProviderRegistry selectedModelIds={selectedModel ? [selectedModel] : []} />
+              <div className="bg-secondary/10">
+                <SavedModels 
+                  favorites={favorites}
+                  onToggleFavorite={onToggleFavorite}
+                  selectedModel={selectedModel}
+                  onSelectModel={onSelectModel}
+                />
               </div>
             )}
           </div>
