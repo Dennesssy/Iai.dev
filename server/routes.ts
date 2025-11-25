@@ -103,73 +103,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI4Trade.ai inspired agents
+  const agents = [
+    { id: "gemini-2.5", name: "Gemini 2.5 Flash", provider: "Google", color: "#00d4ff" },
+    { id: "qwen3-max", name: "Qwen3 Max", provider: "Alibaba", color: "#00ffcc" },
+    { id: "deepseek-v3.1", name: "DeepSeek Chat v3.1", provider: "DeepSeek", color: "#ff006e" },
+    { id: "gpt-5", name: "GPT-5", provider: "OpenAI", color: "#ffbe0b" },
+    { id: "claude-3.7", name: "Claude 3.7 Sonnet", provider: "Anthropic", color: "#8338ec" },
+    { id: "minimax-m2", name: "MiniMax M2", provider: "MiniMax", color: "#3a86ff" },
+  ];
+
+  // Generate portfolio data with realistic trading returns
+  const generatePortfolioData = () => {
+    const portfolios: any = {};
+    const baseReturn = 0.15; // 15% average return
+    
+    agents.forEach((agent) => {
+      const variance = (Math.random() - 0.5) * 0.4;
+      const dailyReturn = (baseReturn + variance) / 365;
+      const daysTraded = 120;
+      const compoundReturn = Math.pow(1 + dailyReturn, daysTraded) - 1;
+      const portfolioValue = 10000 * (1 + compoundReturn);
+      
+      portfolios[agent.id] = {
+        initialCapital: 10000,
+        currentValue: portfolioValue,
+        totalReturn: (compoundReturn * 100).toFixed(2),
+        changeToday: ((Math.random() - 0.5) * 6).toFixed(2),
+        trades: Math.floor(Math.random() * 150) + 50,
+        winRate: (Math.random() * 40 + 45).toFixed(1),
+      };
+    });
+    
+    return portfolios;
+  };
+
   // Live Performance API - Leaderboard data
   app.get("/api/leaderboard", async (req: Request, res: Response) => {
     try {
-      const period = (req.query.period as string) || "1M";
+      const portfolios = generatePortfolioData();
       
-      // Simulated live leaderboard data
-      const leaderboard = [
-        {
-          id: "gpt-4o",
-          name: "GPT-4o",
-          provider: "OpenAI",
-          score: 94.8,
-          change: 2.3,
-          rank: 1,
-          trend: "up",
-          color: "#10B981",
-          lastUpdated: new Date().toISOString(),
-        },
-        {
-          id: "claude-3.5-sonnet",
-          name: "Claude 3.5 Sonnet",
-          provider: "Anthropic",
-          score: 93.2,
-          change: 1.8,
-          rank: 2,
-          trend: "up",
-          color: "#8B5CF6",
-          lastUpdated: new Date().toISOString(),
-        },
-        {
-          id: "gemini-2.0-pro",
-          name: "Gemini 2.0 Pro",
-          provider: "Google",
-          score: 91.5,
-          change: -0.5,
-          rank: 3,
-          trend: "down",
-          color: "#3B82F6",
-          lastUpdated: new Date().toISOString(),
-        },
-        {
-          id: "deepseek-r1",
-          name: "DeepSeek R1",
-          provider: "DeepSeek",
-          score: 89.7,
-          change: 3.2,
-          rank: 4,
-          trend: "up",
-          color: "#F59E0B",
-          lastUpdated: new Date().toISOString(),
-        },
-        {
-          id: "llama-3.3-70b",
-          name: "Llama 3.3 70B",
-          provider: "Meta",
-          score: 87.3,
-          change: 0.9,
-          rank: 5,
-          trend: "up",
-          color: "#EF4444",
-          lastUpdated: new Date().toISOString(),
-        },
-      ];
+      const leaderboard = agents
+        .map((agent, idx) => {
+          const portfolio = portfolios[agent.id];
+          return {
+            id: agent.id,
+            name: agent.name,
+            provider: agent.provider,
+            color: agent.color,
+            initialCapital: 10000,
+            portfolioValue: Math.round(portfolio.currentValue),
+            totalReturn: parseFloat(portfolio.totalReturn),
+            changeToday: parseFloat(portfolio.changeToday),
+            trades: portfolio.trades,
+            winRate: parseFloat(portfolio.winRate),
+            rank: idx + 1,
+            trend: parseFloat(portfolio.changeToday) > 0 ? "up" : parseFloat(portfolio.changeToday) < 0 ? "down" : "stable",
+            lastUpdated: new Date().toISOString(),
+          };
+        })
+        .sort((a, b) => b.totalReturn - a.totalReturn)
+        .map((agent, idx) => ({ ...agent, rank: idx + 1 }));
 
       res.json({
-        period,
+        period: "2024",
+        activeAgents: agents.length,
         data: leaderboard,
+        benchmark: {
+          symbol: "QQQ",
+          name: "QQQ Invesco",
+          color: "#ff6b00",
+          return: 28.5,
+        },
         lastUpdated: new Date().toISOString(),
       });
     } catch (error) {
@@ -177,28 +182,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Live Performance API - Time series data
+  // Live Performance API - Time series data (Portfolio evolution)
   app.get("/api/performance/timeseries", async (req: Request, res: Response) => {
     try {
       const period = (req.query.period as string) || "1M";
-      const models = (req.query.models as string)?.split(",") || ["gpt-4o", "claude-3.5-sonnet"];
+      const selectedAgentIds = (req.query.models as string)?.split(",") || ["gemini-2.5", "gpt-5"];
       
-      // Generate time series data
-      const dataPoints = period === "1D" ? 24 : period === "1W" ? 7 : period === "1M" ? 30 : 90;
+      // Generate hourly portfolio data (60-minute intervals)
+      const dataPoints = period === "1D" ? 24 : period === "1W" ? 7 * 24 : period === "1M" ? 30 * 24 : 90 * 24;
       const timeSeries: any[] = [];
       
       const now = new Date();
+      now.setHours(now.getHours(), 0, 0, 0);
+      
+      // Initialize portfolio values
+      const portfolioValues: any = {};
+      selectedAgentIds.forEach((agentId) => {
+        portfolioValues[agentId] = 10000;
+      });
+      
+      // Generate realistic portfolio evolution
       for (let i = 0; i < dataPoints; i++) {
         const timestamp = new Date(now.getTime() - (dataPoints - i) * 3600000);
         const dataPoint: any = {
           timestamp: timestamp.toISOString(),
-          time: timestamp.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
+          time: timestamp.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true }),
         };
         
-        models.forEach((modelId) => {
-          const baseScore = 85 + Math.random() * 10;
-          const variance = Math.sin(i / 5) * 3;
-          dataPoint[modelId] = baseScore + variance;
+        selectedAgentIds.forEach((agentId) => {
+          const dailyReturn = 0.0015; // ~54% annual
+          const volatility = 0.03;
+          const randomChange = (Math.random() - 0.5) * 2 * volatility;
+          const hourlyReturn = dailyReturn / 24 + randomChange / 24;
+          
+          portfolioValues[agentId] *= (1 + hourlyReturn);
+          dataPoint[agentId] = Math.round(portfolioValues[agentId] * 100) / 100;
         });
         
         timeSeries.push(dataPoint);
@@ -206,8 +224,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         period,
-        models,
+        agents: selectedAgentIds,
         data: timeSeries,
+        marketData: {
+          market: "Nasdaq-100",
+          granularity: "60-minute intervals",
+          currency: "USD",
+          initialCapital: 10000,
+        },
         lastUpdated: new Date().toISOString(),
       });
     } catch (error) {
@@ -218,13 +242,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Live Performance API - Stats summary
   app.get("/api/performance/stats", async (req: Request, res: Response) => {
     try {
+      const portfolios = generatePortfolioData();
+      
+      // Find best agent
+      let bestAgent = agents[0];
+      let bestReturn = -Infinity;
+      Object.entries(portfolios).forEach(([agentId, portfolio]: any) => {
+        if (parseFloat(portfolio.totalReturn) > bestReturn) {
+          bestReturn = parseFloat(portfolio.totalReturn);
+          bestAgent = agents.find((a) => a.id === agentId) || agents[0];
+        }
+      });
+
       const stats = {
-        activeModels: 24,
-        benchmarksPeriod: "2024-Q4",
-        bestModel: "GPT-4o",
-        bestScore: 94.8,
-        avgChange: "+1.8%",
-        totalBenchmarks: 12,
+        activeAgents: 6,
+        tradingPeriod: "Jan 1 - Apr 30, 2024",
+        bestAgent: bestAgent.name,
+        bestReturn: bestReturn.toFixed(2),
+        benchmark: { symbol: "QQQ", return: 28.5 },
+        market: "Nasdaq-100",
+        initialCapital: 10000,
         lastUpdated: new Date().toISOString(),
       };
 
@@ -234,52 +271,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Live Performance API - Recent activity
+  // Live Performance API - Recent trading actions
   app.get("/api/performance/activity", async (req: Request, res: Response) => {
     try {
-      const activities = [
-        {
-          id: "1",
-          type: "benchmark",
-          modelId: "gpt-4o",
-          modelName: "GPT-4o",
-          message: "achieved new MMLU-Pro high",
-          score: 94.8,
-          timestamp: new Date(Date.now() - 300000).toISOString(),
-        },
-        {
-          id: "2",
-          type: "update",
-          modelId: "claude-3.5-sonnet",
-          modelName: "Claude 3.5 Sonnet",
-          message: "updated to latest version",
-          timestamp: new Date(Date.now() - 600000).toISOString(),
-        },
-        {
-          id: "3",
-          type: "release",
-          modelId: "deepseek-r1",
-          modelName: "DeepSeek R1",
-          message: "now available for testing",
-          timestamp: new Date(Date.now() - 900000).toISOString(),
-        },
-        {
-          id: "4",
-          type: "benchmark",
-          modelId: "gemini-2.0-pro",
-          modelName: "Gemini 2.0 Pro",
-          message: "scored 91.5 on HumanEval",
-          score: 91.5,
-          timestamp: new Date(Date.now() - 1800000).toISOString(),
-        },
-      ];
+      const stocks = ["NVDA", "TSLA", "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NFLX", "ADBE", "CRM"];
+      const actions = ["BUY", "SELL", "HOLD"];
+      
+      const tradingActions = [];
+      for (let i = 0; i < 12; i++) {
+        const agent = agents[Math.floor(Math.random() * agents.length)];
+        const action = actions[Math.floor(Math.random() * actions.length)];
+        const stock = stocks[Math.floor(Math.random() * stocks.length)];
+        const quantity = Math.floor(Math.random() * 100) + 10;
+        const price = Math.round((Math.random() * 400 + 50) * 100) / 100;
+        
+        tradingActions.push({
+          id: `trade-${i}`,
+          type: "trade",
+          timestamp: new Date(Date.now() - i * 600000).toISOString(),
+          agentId: agent.id,
+          agentName: agent.name,
+          agentColor: agent.color,
+          action,
+          symbol: stock,
+          quantity,
+          price,
+          totalValue: Math.round(quantity * price * 100) / 100,
+        });
+      }
 
       res.json({
-        data: activities,
+        data: tradingActions.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()),
         lastUpdated: new Date().toISOString(),
       });
     } catch (error) {
-      res.status(500).json({ error: "Failed to fetch activity" });
+      res.status(500).json({ error: "Failed to fetch trading activity" });
     }
   });
 
