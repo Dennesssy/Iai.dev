@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { LineChart, Line, AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { LineChart, Line, AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, ReferenceLine, ComposedChart } from "recharts";
 import { Button } from "@/components/ui/button";
-import { ArrowUp, ArrowDown, TrendingUp, Download, Share2, RefreshCw } from "lucide-react";
+import { ArrowUp, ArrowDown, TrendingUp, Download, Share2, RefreshCw, TrendingDown } from "lucide-react";
 import { MODELS, generateBenchmarkTimeSeries } from "@/lib/mockData";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery } from "@tanstack/react-query";
@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 export default function PerformanceLeaderboard() {
   const [period, setPeriod] = useState("1M");
   const [selectedModels, setSelectedModels] = useState(["gpt-4o", "claude-3.5-sonnet"]);
+  const [isLogScale, setIsLogScale] = useState(false);
 
   const periods = ["1D", "1W", "1M", "3M", "YTD", "ALL"];
 
@@ -102,57 +103,120 @@ export default function PerformanceLeaderboard() {
         <div className="grid grid-cols-3 gap-6 p-6 h-full">
           {/* Left: Performance Chart */}
           <div className="col-span-2">
-            <div className="bg-card border border-border rounded-lg p-4 h-full flex flex-col">
-              <h2 className="text-sm font-semibold text-foreground mb-4">Total Performance Value Over Time</h2>
+            <div className="bg-gradient-to-b from-card to-card/50 border border-primary/20 rounded-lg p-5 h-full flex flex-col shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-bold text-foreground">Performance Over Time</h2>
+                <div className="flex gap-2 text-xs">
+                  <button className="px-2 py-1 rounded bg-primary/10 text-primary font-medium">Linear</button>
+                  <button onClick={() => setIsLogScale(!isLogScale)} className="px-2 py-1 rounded hover:bg-secondary text-muted-foreground font-medium">Log</button>
+                </div>
+              </div>
               
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={performanceData}>
+              <ResponsiveContainer width="100%" height={360}>
+                <ComposedChart data={performanceData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <defs>
                     {selectedModels.map((modelId) => {
                       const model = MODELS[modelId];
                       const color = model?.color || "#0066FF";
                       return (
-                        <linearGradient key={`grad-${modelId}`} id={`grad-${modelId}`} x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor={color} stopOpacity={0.2} />
-                          <stop offset="95%" stopColor={color} stopOpacity={0} />
-                        </linearGradient>
+                        <defs key={`defs-${modelId}`}>
+                          <linearGradient id={`grad-${modelId}`} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor={color} stopOpacity={0.3} />
+                            <stop offset="50%" stopColor={color} stopOpacity={0.1} />
+                            <stop offset="95%" stopColor={color} stopOpacity={0.01} />
+                          </linearGradient>
+                          <filter id={`shadow-${modelId}`}>
+                            <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.15" />
+                          </filter>
+                        </defs>
                       );
                     })}
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 10 }} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 10 }} domain={[0, 100]} />
+                  <CartesianGrid strokeDasharray="4 6" stroke="hsl(var(--border))" opacity={0.3} vertical={true} horizontalPoints={[90]} />
+                  <XAxis 
+                    dataKey="time" 
+                    stroke="hsl(var(--muted-foreground))" 
+                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                    axisLine={{ stroke: "hsl(var(--border))" }}
+                  />
+                  <YAxis 
+                    stroke="hsl(var(--muted-foreground))" 
+                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                    domain={isLogScale ? ['dataMin - 5', 'dataMax + 5'] : [80, 100]}
+                    axisLine={{ stroke: "hsl(var(--border))" }}
+                    scale={isLogScale ? "log" : "linear"}
+                  />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      borderColor: "hsl(var(--border))",
-                      borderRadius: "8px",
+                      backgroundColor: "rgba(0, 0, 0, 0.8)",
+                      borderColor: "hsl(var(--primary))",
+                      borderRadius: "12px",
+                      border: "2px solid",
+                      boxShadow: "0 8px 24px rgba(0, 0, 0, 0.3)",
                     }}
+                    labelStyle={{ color: "#fff", fontWeight: "bold" }}
+                    formatter={(value: any) => typeof value === "number" ? value.toFixed(2) : value}
+                    cursor={{ stroke: "hsl(var(--primary))", strokeOpacity: 0.5 }}
                   />
-                  <Legend />
+                  <Legend 
+                    verticalAlign="top" 
+                    height={20}
+                    wrapperStyle={{ paddingBottom: "10px" }}
+                    iconType="line"
+                  />
+                  <ReferenceLine y={90} stroke="hsl(var(--border))" strokeDasharray="5 5" opacity={0.3} label={{ value: "Baseline", position: "right", fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
+                  
                   {selectedModels.map((modelId) => {
                     const model = MODELS[modelId];
                     const color = model?.color || "#0066FF";
                     return (
                       <Area
                         key={modelId}
-                        type="monotone"
+                        type="natural"
                         dataKey={modelId}
                         stroke={color}
+                        strokeWidth={2.5}
                         fill={`url(#grad-${modelId})`}
                         name={model?.name}
-                        isAnimationActive={false}
+                        isAnimationActive={true}
+                        animationDuration={500}
+                        filter={`url(#shadow-${modelId})`}
+                        dot={false}
+                        activeDot={{ r: 6, fill: color, opacity: 1 }}
                       />
                     );
                   })}
-                </AreaChart>
+                </ComposedChart>
               </ResponsiveContainer>
 
-              {/* Chart Controls */}
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/50 text-xs text-muted-foreground">
-                <span>Linear Scale</span>
-                <Button variant="ghost" size="sm" className="h-7 text-xs">
-                  Export Data
+              {/* Chart Stats */}
+              <div className="flex items-center justify-between mt-5 pt-4 border-t border-border/30">
+                <div className="flex gap-4">
+                  {selectedModels.map((modelId) => {
+                    const model = MODELS[modelId];
+                    const data = performanceData;
+                    const latest = data[data.length - 1]?.[modelId] || 0;
+                    const first = data[0]?.[modelId] || 0;
+                    const change = ((latest - first) / first) * 100;
+                    return (
+                      <div key={modelId} className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: model?.color }} />
+                        <div className="text-xs">
+                          <p className="text-muted-foreground">{model?.name}</p>
+                          <p className="font-bold text-foreground">{latest.toFixed(1)}</p>
+                        </div>
+                        {change !== 0 && (
+                          <div className={`flex items-center gap-0.5 ${change > 0 ? "text-green-500" : "text-red-500"}`}>
+                            {change > 0 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+                            <span className="text-xs font-semibold">{Math.abs(change).toFixed(1)}%</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground hover:text-foreground">
+                  Export
                 </Button>
               </div>
             </div>
