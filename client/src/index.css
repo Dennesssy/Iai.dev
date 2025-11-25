@@ -115,6 +115,15 @@
   }
 }
 
+@keyframes ticker {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
 * {
   /* Premium text rendering */
   -webkit-font-smoothing: antialiased;
@@ -377,6 +386,15 @@ html::before {
       rgba(210, 100% 50%, 0.1) 0%,
       transparent 70%
     );
+  }
+
+  /* Stock exchange ticker animation */
+  .animate-ticker {
+    animation: ticker 30s linear infinite;
+  }
+
+  .animate-ticker:hover {
+    animation-play-state: paused;
   }
 
   /* Card shimmer effect */

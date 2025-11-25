@@ -6,10 +6,13 @@ import {
   type ModelSettings,
   type InsertModelSettings,
   type RateLimit,
+  type SyncJob,
+  type InsertSyncJob,
   users,
   usageHistory,
   modelSettings,
-  rateLimits
+  rateLimits,
+  syncJobs
 } from "@shared/schema";
 import { db } from "@db";
 import { eq, and, desc, gte } from "drizzle-orm";
@@ -25,11 +28,17 @@ export interface IStorage {
   
   getModelSettings(modelId: string): Promise<ModelSettings | undefined>;
   getAllActiveModels(): Promise<ModelSettings[]>;
+  getModelsByProvider(provider: string): Promise<ModelSettings[]>;
   createOrUpdateModelSettings(settings: InsertModelSettings): Promise<ModelSettings>;
+  bulkUpsertModels(models: InsertModelSettings[]): Promise<void>;
   
   getRateLimit(userId: string, endpoint: string): Promise<RateLimit | undefined>;
   updateRateLimit(userId: string, endpoint: string, count: number): Promise<void>;
   resetRateLimitWindow(userId: string, endpoint: string): Promise<void>;
+
+  createSyncJob(job: InsertSyncJob): Promise<SyncJob>;
+  updateSyncJob(id: string, updates: Partial<InsertSyncJob>): Promise<void>;
+  getLatestSyncJob(source: string): Promise<SyncJob | undefined>;
 }
 
 export class DbStorage implements IStorage {
@@ -79,7 +88,17 @@ export class DbStorage implements IStorage {
     return await db
       .select()
       .from(modelSettings)
-      .where(eq(modelSettings.isActive, 1));
+      .where(eq(modelSettings.isActive, true));
+  }
+
+  async getModelsByProvider(provider: string): Promise<ModelSettings[]> {
+    return await db
+      .select()
+      .from(modelSettings)
+      .where(and(
+        eq(modelSettings.provider, provider),
+        eq(modelSettings.isActive, true)
+      ));
   }
 
   async createOrUpdateModelSettings(settings: InsertModelSettings): Promise<ModelSettings> {
@@ -88,13 +107,19 @@ export class DbStorage implements IStorage {
     if (existing) {
       const result = await db
         .update(modelSettings)
-        .set(settings)
+        .set({ ...settings, updatedAt: new Date() })
         .where(eq(modelSettings.modelId, settings.modelId))
         .returning();
       return result[0];
     } else {
       const result = await db.insert(modelSettings).values(settings).returning();
       return result[0];
+    }
+  }
+
+  async bulkUpsertModels(models: InsertModelSettings[]): Promise<void> {
+    for (const model of models) {
+      await this.createOrUpdateModelSettings(model);
     }
   }
 
@@ -138,6 +163,25 @@ export class DbStorage implements IStorage {
         eq(rateLimits.userId, userId),
         eq(rateLimits.endpoint, endpoint)
       ));
+  }
+
+  async createSyncJob(job: InsertSyncJob): Promise<SyncJob> {
+    const result = await db.insert(syncJobs).values(job).returning();
+    return result[0];
+  }
+
+  async updateSyncJob(id: string, updates: Partial<InsertSyncJob>): Promise<void> {
+    await db.update(syncJobs).set(updates).where(eq(syncJobs.id, id));
+  }
+
+  async getLatestSyncJob(source: string): Promise<SyncJob | undefined> {
+    const result = await db
+      .select()
+      .from(syncJobs)
+      .where(eq(syncJobs.source, source))
+      .orderBy(desc(syncJobs.createdAt))
+      .limit(1);
+    return result[0];
   }
 }
 

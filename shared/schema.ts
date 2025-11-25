@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, decimal, timestamp, integer, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, decimal, timestamp, integer, jsonb, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -38,8 +38,26 @@ export const modelSettings = pgTable("model_settings", {
   inputCostPer1k: decimal("input_cost_per_1k").notNull(),
   outputCostPer1k: decimal("output_cost_per_1k").notNull(),
   maxTokens: integer("max_tokens").notNull(),
-  isActive: integer("is_active", { mode: 'boolean' }).notNull().default(sql`1`),
+  contextLength: integer("context_length"),
+  description: text("description"),
+  architecture: jsonb("architecture"),
+  supportedParameters: jsonb("supported_parameters"),
+  isActive: boolean("is_active").notNull().default(true),
   metadata: jsonb("metadata"),
+  lastSynced: timestamp("last_synced"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const syncJobs = pgTable("sync_jobs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  source: text("source").notNull(), // 'openrouter', 'huggingface', etc.
+  status: text("status").notNull(), // 'pending', 'running', 'completed', 'failed'
+  modelsCount: integer("models_count").default(0),
+  errorMessage: text("error_message"),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -54,6 +72,13 @@ export const insertUsageHistorySchema = createInsertSchema(usageHistory).omit({
 
 export const insertModelSettingsSchema = createInsertSchema(modelSettings).omit({
   id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSyncJobSchema = createInsertSchema(syncJobs).omit({
+  id: true,
+  createdAt: true,
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -63,3 +88,5 @@ export type InsertUsageHistory = z.infer<typeof insertUsageHistorySchema>;
 export type ModelSettings = typeof modelSettings.$inferSelect;
 export type InsertModelSettings = z.infer<typeof insertModelSettingsSchema>;
 export type RateLimit = typeof rateLimits.$inferSelect;
+export type SyncJob = typeof syncJobs.$inferSelect;
+export type InsertSyncJob = z.infer<typeof insertSyncJobSchema>;

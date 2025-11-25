@@ -1,0 +1,633 @@
+{
+  "componentDataSchema": {
+    "PerformanceLeaderboard": {
+      "endpoints": [
+        {
+          "url": "/api/leaderboard",
+          "params": { "period": "1M | 1W | 3M | YTD" },
+          "response": {
+            "period": "string",
+            "data": [
+              {
+                "id": "string",
+                "name": "string",
+                "provider": "string",
+                "score": "number",
+                "change": "number",
+                "rank": "number",
+                "trend": "up | down | stable",
+                "color": "string",
+                "lastUpdated": "ISO8601"
+              }
+            ],
+            "lastUpdated": "ISO8601"
+          }
+        },
+        {
+          "url": "/api/performance/timeseries",
+          "params": { "period": "string", "models": "array" },
+          "response": {
+            "period": "string",
+            "models": ["string"],
+            "data": [{ "timestamp": "ISO8601", "time": "string", "[modelId]": "number" }],
+            "lastUpdated": "ISO8601"
+          }
+        },
+        {
+          "url": "/api/performance/stats",
+          "response": {
+            "activeModels": "number",
+            "benchmarksPeriod": "string",
+            "bestModel": "string",
+            "bestScore": "number",
+            "avgChange": "string",
+            "totalBenchmarks": "number",
+            "lastUpdated": "ISO8601"
+          }
+        }
+      ]
+    },
+    "ModelList": {
+      "endpoints": [
+        {
+          "url": "/api/models",
+          "params": { "provider": "optional" },
+          "response": [
+            {
+              "id": "string",
+              "modelId": "string",
+              "displayName": "string",
+              "provider": "string",
+              "inputCostPer1k": "string",
+              "outputCostPer1k": "string",
+              "maxTokens": "number",
+              "contextLength": "number",
+              "description": "string",
+              "architecture": "object",
+              "supportedParameters": ["string"],
+              "isActive": "boolean",
+              "metadata": "object",
+              "lastSynced": "ISO8601",
+              "createdAt": "ISO8601",
+              "updatedAt": "ISO8601"
+            }
+          ]
+        }
+      ]
+    },
+    "ModelDetails": {
+      "endpoints": [
+        {
+          "url": "/api/models/:modelId",
+          "response": {
+            "id": "string",
+            "modelId": "string",
+            "displayName": "string",
+            "provider": "string",
+            "inputCostPer1k": "string",
+            "outputCostPer1k": "string",
+            "maxTokens": "number",
+            "contextLength": "number",
+            "description": "string",
+            "architecture": {
+              "modality": "string",
+              "tokenizer": "string",
+              "instruct_type": "string | null"
+            },
+            "supportedParameters": ["string"],
+            "isActive": "boolean",
+            "metadata": "object",
+            "lastSynced": "ISO8601",
+            "createdAt": "ISO8601",
+            "updatedAt": "ISO8601"
+          }
+        }
+      ]
+    },
+    "ProviderRegistry": {
+      "endpoints": [
+        {
+          "url": "/api/providers",
+          "response": {
+            "total": "number",
+            "providers": [
+              {
+                "name": "string",
+                "modelCount": "number",
+                "models": [
+                  {
+                    "id": "string",
+                    "name": "string",
+                    "inputCost": "number",
+                    "outputCost": "number",
+                    "contextLength": "number",
+                    "maxTokens": "number",
+                    "description": "string",
+                    "supportedParameters": ["string"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "ProviderCompact": {
+      "endpoints": [
+        {
+          "url": "/api/providers",
+          "response": "same as ProviderRegistry"
+        }
+      ]
+    },
+    "ModelNavigator": {
+      "endpoints": [
+        {
+          "url": "/api/models",
+          "params": { "provider": "optional" },
+          "response": "array of models (see ModelList)"
+        }
+      ]
+    },
+    "BubbleChart": {
+      "endpoints": [
+        {
+          "url": "/api/models",
+          "response": "array of models (see ModelList)"
+        }
+      ],
+      "derivedData": {
+        "xAxis": "releaseDate",
+        "yAxis": "benchmarkScore",
+        "zAxis": "blendedPrice (calculated)",
+        "size": "contextWindow"
+      }
+    },
+    "ComparisonChart": {
+      "endpoints": [
+        {
+          "url": "/api/models",
+          "params": { "provider": "optional" },
+          "response": "array of models (see ModelList)"
+        }
+      ]
+    },
+    "ModelChart": {
+      "endpoints": [
+        {
+          "url": "/api/performance/timeseries",
+          "params": { "period": "string", "models": "array" },
+          "response": "see PerformanceLeaderboard timeseries"
+        }
+      ]
+    },
+    "AiMarketNews": {
+      "endpoints": [
+        {
+          "url": "/api/news/feed",
+          "params": { "limit": "optional number", "category": "optional string (all|research|release|pricing)" },
+          "response": {
+            "total": "number",
+            "news": [
+              {
+                "id": "string",
+                "source": "huggingface | github | openrouter",
+                "type": "research | release | pricing | benchmark",
+                "title": "string",
+                "description": "string",
+                "url": "string",
+                "author": "string",
+                "modelId": "optional string",
+                "timestamp": "ISO8601",
+                "metadata": "object"
+              }
+            ],
+            "lastUpdated": "ISO8601"
+          }
+        }
+      ]
+    },
+    "AlertsPanel": {
+      "endpoints": [
+        {
+          "url": "/api/alerts",
+          "response": [
+            {
+              "id": "string",
+              "type": "research | release | pricing | benchmark",
+              "title": "string",
+              "description": "string",
+              "modelId": "optional string",
+              "severity": "info | warning | critical",
+              "timestamp": "ISO8601",
+              "url": "string"
+            }
+          ]
+        }
+      ]
+    },
+    "TickerTape": {
+      "endpoints": [
+        {
+          "url": "/api/models",
+          "response": "array of models (see ModelList)"
+        }
+      ],
+      "displayFormat": "scrolling ticker with price changes"
+    },
+    "SavedModels": {
+      "endpoints": [
+        {
+          "url": "/api/models",
+          "response": "array of models (see ModelList)"
+        }
+      ],
+      "localStorage": {
+        "key": "savedModels",
+        "schema": ["array of modelIds"]
+      }
+    },
+    "Playground": {
+      "endpoints": [
+        {
+          "url": "/api/models",
+          "response": "array of models (see ModelList)"
+        },
+        {
+          "url": "/api/playground/execute",
+          "method": "POST",
+          "request": {
+            "modelId": "string",
+            "prompt": "string",
+            "parameters": {
+              "temperature": "optional number",
+              "max_tokens": "optional number",
+              "top_p": "optional number",
+              "frequency_penalty": "optional number",
+              "presence_penalty": "optional number"
+            }
+          },
+          "response": {
+            "modelId": "string",
+            "response": "string",
+            "usage": {
+              "promptTokens": "number",
+              "completionTokens": "number",
+              "totalTokens": "number"
+            },
+            "cost": "number",
+            "timestamp": "ISO8601"
+          }
+        }
+      ]
+    },
+    "OpenRouterModels": {
+      "endpoints": [
+        {
+          "url": "/api/openrouter/models",
+          "response": {
+            "total": "number",
+            "models": [
+              {
+                "id": "string",
+                "name": "string",
+                "description": "string",
+                "pricing": {
+                  "prompt": "number",
+                  "completion": "number"
+                },
+                "context_length": "number",
+                "architecture": {
+                  "modality": "string",
+                  "input_modalities": ["string"],
+                  "output_modalities": ["string"]
+                },
+                "top_provider": {
+                  "max_completion_tokens": "number"
+                },
+                "parameters": {
+                  "modality": "string",
+                  "supported_generation_types": ["string"]
+                }
+              }
+            ],
+            "lastUpdated": "ISO8601"
+          }
+        },
+        {
+          "url": "/api/openrouter/models/:modelId",
+          "response": {
+            "id": "string",
+            "name": "string",
+            "description": "string",
+            "pricing": "object",
+            "context_length": "number",
+            "architecture": "object",
+            "top_provider": "object",
+            "parameters": "object"
+          }
+        }
+      ]
+    },
+    "SyncComparisonCharts": {
+      "endpoints": [
+        {
+          "url": "/api/models",
+          "response": "array of models (see ModelList)"
+        },
+        {
+          "url": "/api/performance/timeseries",
+          "params": { "period": "string", "models": "array" },
+          "response": "see PerformanceLeaderboard timeseries"
+        }
+      ]
+    },
+    "CommunityInsights": {
+      "endpoints": [
+        {
+          "url": "/api/community/posts",
+          "params": { "limit": "optional number", "category": "optional string" },
+          "response": [
+            {
+              "id": "string",
+              "author": "string",
+              "avatar": "string",
+              "title": "string",
+              "content": "string",
+              "category": "discussion | tip | review",
+              "modelId": "optional string",
+              "upvotes": "number",
+              "replies": "number",
+              "timestamp": "ISO8601"
+            }
+          ]
+        }
+      ]
+    },
+    "HuggingFaceModels": {
+      "endpoints": [
+        {
+          "url": "/api/huggingface/models",
+          "params": { "limit": "optional number", "search": "optional string" },
+          "response": {
+            "total": "number",
+            "models": [
+              {
+                "id": "string",
+                "name": "string",
+                "author": "string",
+                "downloads": "number",
+                "likes": "number",
+                "tags": ["string"],
+                "pipeline_tag": "string",
+                "library_name": "string",
+                "created_at": "ISO8601",
+                "last_modified": "ISO8601",
+                "private": "boolean",
+                "gated": "boolean",
+                "parameters": {
+                  "size": "number | null",
+                  "architecture": "string | null"
+                }
+              }
+            ],
+            "lastUpdated": "ISO8601"
+          }
+        },
+        {
+          "url": "/api/huggingface/models/:author/:model",
+          "response": {
+            "id": "string",
+            "name": "string",
+            "author": "string",
+            "description": "string",
+            "downloads": "number",
+            "likes": "number",
+            "tags": ["string"],
+            "pipeline_tag": "string",
+            "library_name": "string",
+            "created_at": "ISO8601",
+            "last_modified": "ISO8601",
+            "parameters": {
+              "size": "number",
+              "architecture": "string",
+              "vocab_size": "number",
+              "hidden_size": "number",
+              "num_layers": "number",
+              "num_attention_heads": "number"
+            },
+            "config": "object",
+            "card_data": "object"
+          }
+        }
+      ]
+    }
+  },
+  "exampleResponses": {
+    "/api/models": [
+      {
+        "id": "abc123",
+        "modelId": "anthropic/claude-opus-4.5",
+        "displayName": "Claude Opus 4.5",
+        "provider": "anthropic",
+        "inputCostPer1k": "5.0",
+        "outputCostPer1k": "25.0",
+        "maxTokens": 32000,
+        "contextLength": 200000,
+        "description": "Frontier reasoning model optimized for complex software engineering",
+        "architecture": {
+          "modality": "text+image->text",
+          "tokenizer": "Claude",
+          "instruct_type": null
+        },
+        "supportedParameters": ["max_tokens", "temperature", "top_p", "top_k", "stop", "tools"],
+        "isActive": true,
+        "metadata": { "source": "openrouter" },
+        "lastSynced": "2025-11-24T03:00:00Z",
+        "createdAt": "2025-11-24T02:00:00Z",
+        "updatedAt": "2025-11-24T03:00:00Z"
+      }
+    ],
+    "/api/providers": {
+      "total": 25,
+      "providers": [
+        {
+          "name": "anthropic",
+          "modelCount": 12,
+          "models": [
+            {
+              "id": "anthropic/claude-opus-4.5",
+              "name": "Claude Opus 4.5",
+              "inputCost": 5.0,
+              "outputCost": 25.0,
+              "contextLength": 200000,
+              "maxTokens": 32000,
+              "description": "Frontier reasoning model",
+              "supportedParameters": ["max_tokens", "temperature", "top_p"]
+            }
+          ]
+        }
+      ]
+    },
+    "/api/leaderboard": {
+      "period": "1M",
+      "data": [
+        {
+          "id": "gpt-4o",
+          "name": "GPT-4o",
+          "provider": "OpenAI",
+          "score": 94.8,
+          "change": 2.3,
+          "rank": 1,
+          "trend": "up",
+          "color": "#10B981",
+          "lastUpdated": "2025-11-24T03:00:00Z"
+        }
+      ],
+      "lastUpdated": "2025-11-24T03:00:00Z"
+    },
+    "/api/performance/timeseries": {
+      "period": "1M",
+      "models": ["gpt-4o", "claude-3.5-sonnet"],
+      "data": [
+        {
+          "timestamp": "2025-11-24T00:00:00Z",
+          "time": "00:00",
+          "gpt-4o": 94.8,
+          "claude-3.5-sonnet": 93.2
+        }
+      ],
+      "lastUpdated": "2025-11-24T03:00:00Z"
+    },
+    "/api/performance/stats": {
+      "activeModels": 24,
+      "benchmarksPeriod": "2024-Q4",
+      "bestModel": "GPT-4o",
+      "bestScore": 94.8,
+      "avgChange": "+1.8%",
+      "totalBenchmarks": 12,
+      "lastUpdated": "2025-11-24T03:00:00Z"
+    },
+    "/api/performance/activity": {
+      "data": [
+        {
+          "id": "1",
+          "type": "benchmark",
+          "modelId": "gpt-4o",
+          "modelName": "GPT-4o",
+          "message": "achieved new MMLU-Pro high",
+          "score": 94.8,
+          "timestamp": "2025-11-24T02:55:00Z"
+        }
+      ],
+      "lastUpdated": "2025-11-24T03:00:00Z"
+    },
+    "/api/openrouter/models": {
+      "total": 343,
+      "models": [
+        {
+          "id": "anthropic/claude-opus-4.5",
+          "name": "Anthropic: Claude Opus 4.5",
+          "description": "Frontier reasoning model optimized for complex software engineering",
+          "pricing": { "prompt": 5.0, "completion": 25.0 },
+          "context_length": 200000,
+          "architecture": {
+            "modality": "text+image->text",
+            "input_modalities": ["file", "image", "text"],
+            "output_modalities": ["text"]
+          },
+          "top_provider": { "max_completion_tokens": 32000 },
+          "parameters": {
+            "modality": "text+image->text",
+            "supported_generation_types": ["chat", "completion"]
+          }
+        }
+      ],
+      "lastUpdated": "2025-11-24T03:00:00Z"
+    },
+    "/api/huggingface/models": {
+      "total": 100,
+      "models": [
+        {
+          "id": "meta-llama/Llama-3.3-70B-Instruct",
+          "name": "Llama-3.3-70B-Instruct",
+          "author": "meta-llama",
+          "downloads": 1523847,
+          "likes": 3421,
+          "tags": ["llama-3", "conversational", "text-generation"],
+          "pipeline_tag": "text-generation",
+          "library_name": "transformers",
+          "created_at": "2024-12-06T00:00:00Z",
+          "last_modified": "2024-12-10T15:30:00Z",
+          "private": false,
+          "gated": false,
+          "parameters": {
+            "size": 140000000000,
+            "architecture": "LlamaForCausalLM"
+          }
+        }
+      ],
+      "lastUpdated": "2025-11-24T03:00:00Z"
+    },
+    "/api/news/feed": {
+      "total": 10,
+      "news": [
+        {
+          "id": "hf-2024.12345",
+          "source": "huggingface",
+          "type": "research",
+          "title": "Scaling Laws for Neural Language Models",
+          "description": "We study empirical scaling laws for language model performance on the cross-entropy loss...",
+          "url": "https://huggingface.co/papers/2024.12345",
+          "author": "John Researcher",
+          "timestamp": "2025-11-24T10:00:00Z",
+          "metadata": {
+            "upvotes": 245,
+            "comments": 18
+          }
+        },
+        {
+          "id": "gh-12345678",
+          "source": "github",
+          "type": "release",
+          "title": "openai/gpt-4: Advanced AI model for complex reasoning",
+          "description": "GPT-4 is a large multimodal model accepting image and text inputs",
+          "url": "https://github.com/openai/gpt-4",
+          "author": "openai",
+          "timestamp": "2025-11-24T08:30:00Z",
+          "metadata": {
+            "stars": 15234,
+            "forks": 2341,
+            "language": "Python"
+          }
+        },
+        {
+          "id": "or-anthropic/claude-opus-4.5-0",
+          "source": "openrouter",
+          "type": "pricing",
+          "title": "Anthropic: Claude Opus 4.5 Available on OpenRouter",
+          "description": "Frontier reasoning model optimized for complex software engineering. Input: $5.00/M, Output: $25.00/M",
+          "url": "https://openrouter.ai/models",
+          "modelId": "anthropic/claude-opus-4.5",
+          "timestamp": "2025-11-24T07:00:00Z",
+          "metadata": {
+            "context_length": 200000,
+            "modality": "text+image->text"
+          }
+        }
+      ],
+      "lastUpdated": "2025-11-24T12:00:00Z"
+    },
+    "/api/alerts": [
+      {
+        "id": "alert-gh-12345678",
+        "type": "release",
+        "title": "openai/gpt-4: Advanced AI model for complex reasoning",
+        "description": "GPT-4 is a large multimodal model accepting image and text inputs",
+        "severity": "critical",
+        "timestamp": "2025-11-24T08:30:00Z",
+        "url": "https://github.com/openai/gpt-4"
+      }
+    ]
+  }
+}
